@@ -1,0 +1,332 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="SportsManagementSystemModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Rules">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="sportrs_id" Type="int" />
+          <Property Name="rules_of_game" Type="varchar(max)" />
+        </EntityType>
+        <EntityType Name="Sessions">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="startDate" Type="date" />
+          <Property Name="endDate" Type="date" />
+        </EntityType>
+        <EntityType Name="SessionSports">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="session_id" Type="int" />
+          <Property Name="sports_id" Type="int" />
+          <Property Name="managed_by" Type="int" />
+          <Property Name="no_of_teams" Type="int" />
+        </EntityType>
+        <EntityType Name="Sports">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="games" Type="varchar" MaxLength="25" />
+          <Property Name="game_type" Type="varchar" MaxLength="25" />
+        </EntityType>
+        <EntityType Name="Users">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="varchar" MaxLength="100" />
+          <Property Name="registration_no" Type="varchar" MaxLength="100" />
+          <Property Name="password" Type="varchar" MaxLength="100" />
+          <Property Name="role" Type="varchar" MaxLength="25" />
+        </EntityType>
+        <Association Name="FK__Rules__rules_of___2DE6D218">
+          <End Role="Sports" Type="Self.Sports" Multiplicity="0..1" />
+          <End Role="Rules" Type="Self.Rules" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Sports">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Rules">
+              <PropertyRef Name="sportrs_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__SessionSp__manag__32AB8735">
+          <End Role="Users" Type="Self.Users" Multiplicity="0..1" />
+          <End Role="SessionSports" Type="Self.SessionSports" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="SessionSports">
+              <PropertyRef Name="managed_by" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__SessionSp__sessi__30C33EC3">
+          <End Role="Sessions" Type="Self.Sessions" Multiplicity="0..1" />
+          <End Role="SessionSports" Type="Self.SessionSports" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Sessions">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="SessionSports">
+              <PropertyRef Name="session_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__SessionSp__sport__31B762FC">
+          <End Role="Sports" Type="Self.Sports" Multiplicity="0..1" />
+          <End Role="SessionSports" Type="Self.SessionSports" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Sports">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="SessionSports">
+              <PropertyRef Name="sports_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="SportsManagementSystemModelStoreContainer">
+          <EntitySet Name="Rules" EntityType="Self.Rules" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Sessions" EntityType="Self.Sessions" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SessionSports" EntityType="Self.SessionSports" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Sports" EntityType="Self.Sports" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Users" EntityType="Self.Users" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK__Rules__rules_of___2DE6D218" Association="Self.FK__Rules__rules_of___2DE6D218">
+            <End Role="Sports" EntitySet="Sports" />
+            <End Role="Rules" EntitySet="Rules" />
+          </AssociationSet>
+          <AssociationSet Name="FK__SessionSp__manag__32AB8735" Association="Self.FK__SessionSp__manag__32AB8735">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="SessionSports" EntitySet="SessionSports" />
+          </AssociationSet>
+          <AssociationSet Name="FK__SessionSp__sessi__30C33EC3" Association="Self.FK__SessionSp__sessi__30C33EC3">
+            <End Role="Sessions" EntitySet="Sessions" />
+            <End Role="SessionSports" EntitySet="SessionSports" />
+          </AssociationSet>
+          <AssociationSet Name="FK__SessionSp__sport__31B762FC" Association="Self.FK__SessionSp__sport__31B762FC">
+            <End Role="Sports" EntitySet="Sports" />
+            <End Role="SessionSports" EntitySet="SessionSports" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="SportsManagementSystemModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="Rule">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="sportrs_id" Type="Int32" />
+          <Property Name="rules_of_game" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="Sport" Relationship="Self.FK__Rules__rules_of___2DE6D218" FromRole="Rules" ToRole="Sports" />
+        </EntityType>
+        <EntityType Name="Session">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="startDate" Type="DateTime" Precision="0" />
+          <Property Name="endDate" Type="DateTime" Precision="0" />
+          <NavigationProperty Name="SessionSports" Relationship="Self.FK__SessionSp__sessi__30C33EC3" FromRole="Sessions" ToRole="SessionSports" />
+        </EntityType>
+        <EntityType Name="SessionSport">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="session_id" Type="Int32" />
+          <Property Name="sports_id" Type="Int32" />
+          <Property Name="managed_by" Type="Int32" />
+          <Property Name="no_of_teams" Type="Int32" />
+          <NavigationProperty Name="Session" Relationship="Self.FK__SessionSp__sessi__30C33EC3" FromRole="SessionSports" ToRole="Sessions" />
+          <NavigationProperty Name="User" Relationship="Self.FK__SessionSp__manag__32AB8735" FromRole="SessionSports" ToRole="Users" />
+          <NavigationProperty Name="Sport" Relationship="Self.FK__SessionSp__sport__31B762FC" FromRole="SessionSports" ToRole="Sports" />
+        </EntityType>
+        <EntityType Name="Sport">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="games" Type="String" MaxLength="25" FixedLength="false" Unicode="false" />
+          <Property Name="game_type" Type="String" MaxLength="25" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="Rules" Relationship="Self.FK__Rules__rules_of___2DE6D218" FromRole="Sports" ToRole="Rules" />
+          <NavigationProperty Name="SessionSports" Relationship="Self.FK__SessionSp__sport__31B762FC" FromRole="Sports" ToRole="SessionSports" />
+        </EntityType>
+        <EntityType Name="User">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="registration_no" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="password" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="role" Type="String" MaxLength="25" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="SessionSports" Relationship="Self.FK__SessionSp__manag__32AB8735" FromRole="Users" ToRole="SessionSports" />
+        </EntityType>
+        <Association Name="FK__Rules__rules_of___2DE6D218">
+          <End Role="Sports" Type="Self.Sport" Multiplicity="0..1" />
+          <End Role="Rules" Type="Self.Rule" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Sports">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Rules">
+              <PropertyRef Name="sportrs_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__SessionSp__sessi__30C33EC3">
+          <End Role="Sessions" Type="Self.Session" Multiplicity="0..1" />
+          <End Role="SessionSports" Type="Self.SessionSport" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Sessions">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="SessionSports">
+              <PropertyRef Name="session_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__SessionSp__manag__32AB8735">
+          <End Role="Users" Type="Self.User" Multiplicity="0..1" />
+          <End Role="SessionSports" Type="Self.SessionSport" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="SessionSports">
+              <PropertyRef Name="managed_by" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__SessionSp__sport__31B762FC">
+          <End Role="Sports" Type="Self.Sport" Multiplicity="0..1" />
+          <End Role="SessionSports" Type="Self.SessionSport" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Sports">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="SessionSports">
+              <PropertyRef Name="sports_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="SportsManagementSystemEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Rules" EntityType="Self.Rule" />
+          <EntitySet Name="Sessions" EntityType="Self.Session" />
+          <EntitySet Name="SessionSports" EntityType="Self.SessionSport" />
+          <EntitySet Name="Sports" EntityType="Self.Sport" />
+          <EntitySet Name="Users" EntityType="Self.User" />
+          <AssociationSet Name="FK__Rules__rules_of___2DE6D218" Association="Self.FK__Rules__rules_of___2DE6D218">
+            <End Role="Sports" EntitySet="Sports" />
+            <End Role="Rules" EntitySet="Rules" />
+          </AssociationSet>
+          <AssociationSet Name="FK__SessionSp__sessi__30C33EC3" Association="Self.FK__SessionSp__sessi__30C33EC3">
+            <End Role="Sessions" EntitySet="Sessions" />
+            <End Role="SessionSports" EntitySet="SessionSports" />
+          </AssociationSet>
+          <AssociationSet Name="FK__SessionSp__manag__32AB8735" Association="Self.FK__SessionSp__manag__32AB8735">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="SessionSports" EntitySet="SessionSports" />
+          </AssociationSet>
+          <AssociationSet Name="FK__SessionSp__sport__31B762FC" Association="Self.FK__SessionSp__sport__31B762FC">
+            <End Role="Sports" EntitySet="Sports" />
+            <End Role="SessionSports" EntitySet="SessionSports" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="SportsManagementSystemModelStoreContainer" CdmEntityContainer="SportsManagementSystemEntities">
+          <EntitySetMapping Name="Rules">
+            <EntityTypeMapping TypeName="SportsManagementSystemModel.Rule">
+              <MappingFragment StoreEntitySet="Rules">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="sportrs_id" ColumnName="sportrs_id" />
+                <ScalarProperty Name="rules_of_game" ColumnName="rules_of_game" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Sessions">
+            <EntityTypeMapping TypeName="SportsManagementSystemModel.Session">
+              <MappingFragment StoreEntitySet="Sessions">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="startDate" ColumnName="startDate" />
+                <ScalarProperty Name="endDate" ColumnName="endDate" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="SessionSports">
+            <EntityTypeMapping TypeName="SportsManagementSystemModel.SessionSport">
+              <MappingFragment StoreEntitySet="SessionSports">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="session_id" ColumnName="session_id" />
+                <ScalarProperty Name="sports_id" ColumnName="sports_id" />
+                <ScalarProperty Name="managed_by" ColumnName="managed_by" />
+                <ScalarProperty Name="no_of_teams" ColumnName="no_of_teams" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Sports">
+            <EntityTypeMapping TypeName="SportsManagementSystemModel.Sport">
+              <MappingFragment StoreEntitySet="Sports">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="games" ColumnName="games" />
+                <ScalarProperty Name="game_type" ColumnName="game_type" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Users">
+            <EntityTypeMapping TypeName="SportsManagementSystemModel.User">
+              <MappingFragment StoreEntitySet="Users">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="registration_no" ColumnName="registration_no" />
+                <ScalarProperty Name="password" ColumnName="password" />
+                <ScalarProperty Name="role" ColumnName="role" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

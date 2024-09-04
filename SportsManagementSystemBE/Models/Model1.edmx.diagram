@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="f9304e411abe4129a389c1f5c1ed1675" Name="Diagram1" ZoomLevel="47">
+        <EntityTypeShape EntityType="SportsManagementSystemModel.Rule" Width="1.5" PointX="3" PointY="4.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.Session" Width="1.5" PointX="0.75" PointY="7.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.SessionSport" Width="1.5" PointX="3" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.Sport" Width="1.5" PointX="0.75" PointY="4" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.User" Width="1.5" PointX="0.75" PointY="10.5" IsExpanded="true" />
+        <AssociationConnector Association="SportsManagementSystemModel.FK__Rules__rules_of___2DE6D218" ManuallyRouted="false" />
+        <AssociationConnector Association="SportsManagementSystemModel.FK__SessionSp__sessi__30C33EC3" ManuallyRouted="false" />
+        <AssociationConnector Association="SportsManagementSystemModel.FK__SessionSp__manag__32AB8735" ManuallyRouted="false" />
+        <AssociationConnector Association="SportsManagementSystemModel.FK__SessionSp__sport__31B762FC" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>
