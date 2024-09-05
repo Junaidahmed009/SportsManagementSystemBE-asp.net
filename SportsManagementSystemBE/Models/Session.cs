@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System;
+    using System;using Newtonsoft.Json;
     using System.Collections.Generic;
     
     public partial class Session
@@ -26,6 +26,6 @@ namespace SportsManagementSystemBE.Models
         public Nullable<System.DateTime> endDate { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<SessionSport> SessionSports { get; set; }
+        [JsonIgnore] public virtual ICollection<SessionSport> SessionSports { get; set; }
     }
 }
