@@ -45,21 +45,31 @@ namespace SportsManagementSystemBE.Controllers
                 var existingUser = db.Users
                     .FirstOrDefault(u => u.registration_no == user.registration_no);
 
-                if (existingUser != null)  // Corrected logic: if a user exists, return conflict
+                if (existingUser != null)
                 {
+                   
                     return Request.CreateResponse(HttpStatusCode.Conflict);
+                }
+                var nameExists = db.Users
+                    .FirstOrDefault(u => u.name == user.name);
+
+                if (nameExists != null)
+                {
+                    
+                    return Request.CreateResponse(HttpStatusCode.BadRequest);
                 }
 
                 db.Users.Add(user);
                 db.SaveChanges();
 
-                return Request.CreateResponse(HttpStatusCode.Created);  // Return 201 Created without any additional data
+                return Request.CreateResponse(HttpStatusCode.Created);
             }
             catch (Exception ex)
             {
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
+
 
         [HttpPost]
         public HttpResponseMessage LoginUser(User logindata)
@@ -122,11 +132,11 @@ namespace SportsManagementSystemBE.Controllers
         {
             try
             {
-                var user = db.Users.FirstOrDefault(u => u.registration_no == data.registration_no);
+                var user = db.Users.FirstOrDefault( u=>u.name == data.name && u.registration_no == data.registration_no);
 
                 if (user == null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                    return Request.CreateResponse(HttpStatusCode.NotFound);//404
                 }
                 user.password = data.password;
 
