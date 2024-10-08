@@ -8,10 +8,28 @@ using System.Web.Http;
 
 namespace SportsManagementSystemBE.Controllers
 {
-    
-    public class EventManSelectionController : ApiController
+    public class SportsController : ApiController
     {
         private SportsManagementSystemEntities db = new SportsManagementSystemEntities();
+        [HttpGet]
+        public HttpResponseMessage GetSports()
+        {
+            try
+            {
+                var sports = db.Sports
+                               .Select(s => new { s.id, s.games })
+                               .ToList();
+                if (sports == null || !sports.Any())
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                }
+                return Request.CreateResponse(HttpStatusCode.OK, sports);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
+            }
+        }
         [HttpGet]
         public HttpResponseMessage GetSportsandManagers()
         {
@@ -23,7 +41,7 @@ namespace SportsManagementSystemBE.Controllers
 
                 var eventManagers = db.Users
                                       .Where(u => u.role == "EventManager")
-                                      .Select(u => new { u.id, u.name,u.registration_no})
+                                      .Select(u => new { u.id, u.name, u.registration_no })
                                       .ToList();
 
                 if ((sports == null || !sports.Any()) && (eventManagers == null || !eventManagers.Any()))
@@ -83,12 +101,6 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
             }
         }
-
-
-
-
-
-
 
     }
 }
