@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System;using Newtonsoft.Json;
+    using System; using Newtonsoft.Json;
     using System.Collections.Generic;
     
     public partial class User
@@ -18,6 +18,7 @@ namespace SportsManagementSystemBE.Models
         public User()
         {
             this.SessionSports = new HashSet<SessionSport>();
+            this.Teams = new HashSet<Team>();
         }
     
         public int id { get; set; }
@@ -28,5 +29,7 @@ namespace SportsManagementSystemBE.Models
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         [JsonIgnore] public virtual ICollection<SessionSport> SessionSports { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        [JsonIgnore] public virtual ICollection<Team> Teams { get; set; }
     }
 }

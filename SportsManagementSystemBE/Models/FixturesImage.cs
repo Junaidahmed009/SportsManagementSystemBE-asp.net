@@ -12,16 +12,12 @@ namespace SportsManagementSystemBE.Models
     using System; using Newtonsoft.Json;
     using System.Collections.Generic;
     
-    public partial class SessionSport
+    public partial class FixturesImage
     {
         public int id { get; set; }
-        public int session_id { get; set; }
-        public int sports_id { get; set; }
-        public int managed_by { get; set; }
-        public Nullable<int> no_of_teams { get; set; }
+        public int fixtures_id { get; set; }
+        public string imagePath { get; set; }
     
-        [JsonIgnore] public virtual Session Session { get; set; }
-        [JsonIgnore] public virtual User User { get; set; }
-        [JsonIgnore] public virtual Sport Sport { get; set; }
+        [JsonIgnore] public virtual Fixture Fixture { get; set; }
     }
 }

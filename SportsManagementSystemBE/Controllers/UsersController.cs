@@ -21,13 +21,11 @@ namespace SportsManagementSystemBE.Controllers
             {
                 var users = db.Users.ToList();
 
-                // Check if there are no users in the database
                 if (users == null || users.Count == 0)
                 {
                     return Request.CreateResponse(HttpStatusCode.NotFound, "No users found.");
                 }
 
-                // Return the list of users with a 200 OK status
                 return Request.CreateResponse(HttpStatusCode.OK, users);
             }
             catch (Exception ex)
@@ -50,14 +48,14 @@ namespace SportsManagementSystemBE.Controllers
                    
                     return Request.CreateResponse(HttpStatusCode.Conflict);
                 }
-                var nameExists = db.Users
-                    .FirstOrDefault(u => u.name == user.name);
+                //var nameExists = db.Users
+                //    .FirstOrDefault(u => u.name == user.name);
 
-                if (nameExists != null)
-                {
+                //if (nameExists != null)
+                //{
                     
-                    return Request.CreateResponse(HttpStatusCode.BadRequest);
-                }
+                //    return Request.CreateResponse(HttpStatusCode.BadRequest);
+                //}
 
                 db.Users.Add(user);
                 db.SaveChanges();
@@ -71,26 +69,66 @@ namespace SportsManagementSystemBE.Controllers
         }
 
 
+        //[HttpPost]
+        //public HttpResponseMessage LoginUser(User logindata)
+        //{
+        //    try
+        //    {
+        //        var user = db.Users.FirstOrDefault(u => u.registration_no == logindata.registration_no);
+
+        //        if (user == null)
+        //        {
+        //            return Request.CreateResponse(HttpStatusCode.NotFound); 
+        //        }
+
+        //        if (user.password != logindata.password)
+        //        {
+        //            return Request.CreateResponse(HttpStatusCode.Unauthorized); 
+        //        }
+
+        //        var userid = db.Users.FirstOrDefault(u => u.registration_no == logindata.registration_no);
+        //        var latestSession = db.Sessions.OrderByDescending(s => s.endDate).FirstOrDefault();
+        //        var checkmangerid=db.SessionSports
+        //            .Where(s=>s.managed_by==)
+
+
+        //        var responseUser = new
+        //        {
+        //            user.name,
+        //            user.registration_no,
+        //            user.role
+        //        };
+
+        //        return Request.CreateResponse(HttpStatusCode.OK, responseUser); 
+        //    }
+        //    catch (Exception ex)
+        //    {
+
+        //        return Request.CreateResponse(HttpStatusCode.InternalServerError, $"An error occurred: {ex.Message}");
+        //    }
+        //}
+
         [HttpPost]
         public HttpResponseMessage LoginUser(User logindata)
         {
             try
             {
-                // Find the user by registration number
-                var user = db.Users.FirstOrDefault(u => u.registration_no == logindata.registration_no);
+                var user = db.Users.FirstOrDefault(u => u.registration_no == logindata.registration_no && u.password==logindata.password);
 
                 if (user == null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.NotFound); // Registration number is incorrect
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
                 }
 
-                // Verify the password
-                if (user.password != logindata.password)
-                {
-                    return Request.CreateResponse(HttpStatusCode.Unauthorized); // Password is incorrect
-                }
+                //if (user.password != logindata.password)
+                //{
+                //    return Request.CreateResponse(HttpStatusCode.Unauthorized);
+                //}
 
-                // Return user details (without password) on successful login
+                // Get the latest session based on endDate
+                var latestSession = db.Sessions.OrderByDescending(s => s.endDate).FirstOrDefault();
+
+                // Prepare response data
                 var responseUser = new
                 {
                     user.name,
@@ -98,11 +136,42 @@ namespace SportsManagementSystemBE.Controllers
                     user.role
                 };
 
-                return Request.CreateResponse(HttpStatusCode.OK, responseUser); // Status 200 if both registration number and password are correct
+                // Handle conditions based on user role
+                if (user.role == "EventManager")
+                {
+                    if (latestSession != null)
+                    {
+                        var sessionSport = db.SessionSports
+                            .FirstOrDefault(s => s.managed_by == user.id && s.session_id == latestSession.id);
+
+                        if (sessionSport != null)
+                        {
+                            var responseWithSport = new
+                            {
+                                user.name,
+                                user.registration_no,
+                                user.role,
+                                SportId = sessionSport.sports_id
+                            };
+                            return Request.CreateResponse(HttpStatusCode.OK, responseWithSport);
+                        }
+                        else
+                        {
+                            user.role = "user";
+                            db.SaveChanges();
+                            return Request.CreateResponse(HttpStatusCode.Conflict);//, "Event manager does not have a managed session."
+                        }
+                    }
+                }
+                else if (user.role == "Admin" || user.role == "user")
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, responseUser);
+                }
+
+                return Request.CreateResponse(HttpStatusCode.BadRequest);//, "Invalid role."
             }
             catch (Exception ex)
             {
-                // Log the exception or include the error message in the response for debugging
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, $"An error occurred: {ex.Message}");
             }
         }
@@ -127,7 +196,7 @@ namespace SportsManagementSystemBE.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPut]
         public HttpResponseMessage Submitnewpassword(User data)
         {
             try

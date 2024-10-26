@@ -1,4 +1,4 @@
-﻿using SportsManagementSystemBE.Models;
+﻿    using SportsManagementSystemBE.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -99,6 +99,43 @@ namespace SportsManagementSystemBE.Controllers
             catch (Exception ex)
             {
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
+            }
+        }
+        //this is for creating user to eventmanager.
+        [HttpPost]
+        public HttpResponseMessage PostEventManagers(User data)
+        {
+            try
+            {
+                //if (data == null)
+                //{
+                //    return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid user data.");
+                //}
+                var existingUser = db.Users.Any(u => u.registration_no == data.registration_no);
+                if (!existingUser)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "User not found.");
+                }
+                var alredymanager = db.Users.Any(u => u.role == "EventManager" && u.registration_no == data.registration_no);
+                if (alredymanager)
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "Already Manager");
+                }
+
+                var updatedManager = db.Users.FirstOrDefault(u => u.registration_no == data.registration_no);
+                if (updatedManager != null)
+                {
+                    updatedManager.role = "EventManager";
+
+                    db.SaveChanges();
+                    return Request.CreateResponse(HttpStatusCode.Created, updatedManager);
+                }
+
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, "Unable to update user.");
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, $"An error occurred: {ex.Message}");
             }
         }
 

@@ -9,13 +9,13 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System;using Newtonsoft.Json;
+    using System; using Newtonsoft.Json;
     using System.Collections.Generic;
     
     public partial class Rule
     {
         public int id { get; set; }
-        public Nullable<int> sportrs_id { get; set; }
+        public int sports_id { get; set; }
         public string rules_of_game { get; set; }
     
         [JsonIgnore] public virtual Sport Sport { get; set; }

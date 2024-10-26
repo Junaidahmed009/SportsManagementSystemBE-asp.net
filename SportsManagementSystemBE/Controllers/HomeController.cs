@@ -10,6 +10,9 @@ namespace SportsManagementSystemBE.Controllers
     {
         public ActionResult Index()
         {
+           // ctrl + h using System =using System; using Newtonsoft.Json; using Newtonsoft.Json;
+            ///[JsonIgnore] public virtual=[JsonIgnore] [JsonIgnore] public virtual.
+
             ViewBag.Title = "Home Page";
 
             return View();

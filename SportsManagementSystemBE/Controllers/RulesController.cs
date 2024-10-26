@@ -19,24 +19,8 @@ namespace SportsManagementSystemBE.Controllers
         {
             try
             {
-                var sportidExists = db.Rules.Any(r => r.sportrs_id == Sportsid);
-                if (!sportidExists)
-                {
-                    // If the Sportsid doesn't exist, insert a new record with null rules_of_game and sports id
-                    var newRule = new Rule
-                    {
-                        sportrs_id = Sportsid,
-                        rules_of_game = " "
-                    };
-                    db.Rules.Add(newRule);
-                    db.SaveChanges();
-                    var senruleddata = db.Rules.Where(r=>r.sportrs_id == Sportsid).Select(r => new { r.rules_of_game })
-                                  .ToList();
-                    return Request.CreateResponse(HttpStatusCode.OK, senruleddata);
-                }
-
                 var rulesdata = db.Rules
-                                  .Where(r => r.sportrs_id == Sportsid)
+                                  .Where(r => r.sports_id == Sportsid)
                                   .Select(r => new { r.rules_of_game })
                                   .ToList();
                 if (rulesdata == null || !rulesdata.Any())
@@ -53,23 +37,27 @@ namespace SportsManagementSystemBE.Controllers
 
 
         [HttpPost]
-        public HttpResponseMessage UpdateRules([FromBody]Rule data)
+        public HttpResponseMessage UpdateRules(Rule data)
         {
             try
             {
-                var existingRule = db.Rules.FirstOrDefault(r => r.sportrs_id == data.sportrs_id);
+                var existingRule = db.Rules.FirstOrDefault(r => r.sports_id == data.sports_id);
 
-                if (existingRule != null)
+                if (existingRule == null)
                 {
-                    // Update the existing rule
-                    existingRule.rules_of_game = data.rules_of_game;
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "Rule not found for the given sports ID.");
                 }
+
+                // Update the existing rule
+                existingRule.rules_of_game = data.rules_of_game;
+
+                // Save changes to the database
                 db.SaveChanges();
-                return Request.CreateResponse(HttpStatusCode.Created);
+
+                return Request.CreateResponse(HttpStatusCode.OK, "Rule updated successfully."); // Changed to 200 OK
             }
             catch (Exception ex)
             {
-                // Log the error (optional)
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error saving the rule: {ex.Message}");
             }
         }

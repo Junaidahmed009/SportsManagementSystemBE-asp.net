@@ -25,10 +25,20 @@ namespace SportsManagementSystemBE.Models
             throw new UnintentionalCodeFirstException();
         }
     
+        public virtual DbSet<Comment> Comments { get; set; }
+        public virtual DbSet<CricketScore> CricketScores { get; set; }
+        public virtual DbSet<Fixture> Fixtures { get; set; }
+        public virtual DbSet<FixturesImage> FixturesImages { get; set; }
+        public virtual DbSet<GoalBaseScore> GoalBaseScores { get; set; }
+        public virtual DbSet<Player> Players { get; set; }
+        public virtual DbSet<PointsBaseScore> PointsBaseScores { get; set; }
         public virtual DbSet<Rule> Rules { get; set; }
         public virtual DbSet<Session> Sessions { get; set; }
         public virtual DbSet<SessionSport> SessionSports { get; set; }
         public virtual DbSet<Sport> Sports { get; set; }
+        public virtual DbSet<Student> Students { get; set; }
+        public virtual DbSet<Team> Teams { get; set; }
+        public virtual DbSet<TurnBaseGame> TurnBaseGames { get; set; }
         public virtual DbSet<User> Users { get; set; }
     }
 }
