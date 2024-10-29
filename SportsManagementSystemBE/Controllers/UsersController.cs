@@ -131,6 +131,7 @@ namespace SportsManagementSystemBE.Controllers
                 // Prepare response data
                 var responseUser = new
                 {
+                    user.id,
                     user.name,
                     user.registration_no,
                     user.role
@@ -148,6 +149,7 @@ namespace SportsManagementSystemBE.Controllers
                         {
                             var responseWithSport = new
                             {
+                                user.id,
                                 user.name,
                                 user.registration_no,
                                 user.role,
@@ -157,8 +159,6 @@ namespace SportsManagementSystemBE.Controllers
                         }
                         else
                         {
-                            user.role = "user";
-                            db.SaveChanges();
                             return Request.CreateResponse(HttpStatusCode.Conflict);//, "Event manager does not have a managed session."
                         }
                     }

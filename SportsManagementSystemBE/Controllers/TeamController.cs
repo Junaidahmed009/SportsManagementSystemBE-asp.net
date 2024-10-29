@@ -13,8 +13,27 @@ namespace SportsManagementSystemBE.Controllers
     {
         private SportsManagementSystemEntities db = new SportsManagementSystemEntities();
 
+        [HttpGet]
+        public HttpResponseMessage CheckTeamNames(string tname)
+        {
+            try
+            {
+                var checkname = db.Teams.Any(t => t.name == tname);
+                if (checkname) {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "Team is already registered");
+                }
+                return Request.CreateResponse(HttpStatusCode.OK);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+
+        }
+
+
         [HttpPost]
-        public HttpResponseMessage Teamdata(Team team)
+        public HttpResponseMessage Teamandstudentsdata(Team team,Student student)
         {
             try
             {

@@ -13,6 +13,25 @@ namespace SportsManagementSystemBE.Controllers
     {
         private SportsManagementSystemEntities db = new SportsManagementSystemEntities();
 
+        [HttpGet]
+        public HttpResponseMessage Getsessions()
+        {
+            try
+            {
+                var sessionDetails = db.Sessions
+               .Select(s => new { s.id, s.name })
+               .ToList();
+                return Request.CreateResponse(HttpStatusCode.OK, sessionDetails);
+
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
+            }
+
+        }
+        
+
         [HttpPost]
         public HttpResponseMessage PostSession(Session session)
         {
