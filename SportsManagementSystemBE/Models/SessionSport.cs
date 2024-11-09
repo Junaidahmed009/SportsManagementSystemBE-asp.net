@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System; using Newtonsoft.Json;
+    using System; using Newtonsoft.Json; 
     using System.Collections.Generic;
     
     public partial class SessionSport
@@ -21,7 +21,7 @@ namespace SportsManagementSystemBE.Models
         public Nullable<int> no_of_teams { get; set; }
     
         [JsonIgnore] public virtual Session Session { get; set; }
-        [JsonIgnore] public virtual User User { get; set; }
         [JsonIgnore] public virtual Sport Sport { get; set; }
+        [JsonIgnore] public virtual User User { get; set; }
     }
 }

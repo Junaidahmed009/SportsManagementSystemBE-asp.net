@@ -120,7 +120,7 @@
           <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="varchar" MaxLength="50" />
           <Property Name="className" Type="varchar" MaxLength="50" />
-          <Property Name="managed_by" Type="int" Nullable="false" />
+          <Property Name="caption_id" Type="int" Nullable="false" />
           <Property Name="session_id" Type="int" Nullable="false" />
           <Property Name="sports_id" Type="int" Nullable="false" />
           <Property Name="image_path" Type="varchar(max)" />
@@ -157,18 +157,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK__SessionSp__manag__32AB8735">
-          <End Role="Users" Type="Self.Users" Multiplicity="1" />
-          <End Role="SessionSports" Type="Self.SessionSports" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Users">
-              <PropertyRef Name="id" />
-            </Principal>
-            <Dependent Role="SessionSports">
-              <PropertyRef Name="managed_by" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <Association Name="FK__SessionSp__sessi__30C33EC3">
           <End Role="Sessions" Type="Self.Sessions" Multiplicity="1" />
           <End Role="SessionSports" Type="Self.SessionSports" Multiplicity="*" />
@@ -190,18 +178,6 @@
             </Principal>
             <Dependent Role="SessionSports">
               <PropertyRef Name="sports_id" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK__Teams__managed_b__0A688BB1">
-          <End Role="Users" Type="Self.Users" Multiplicity="1" />
-          <End Role="Teams" Type="Self.Teams" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Users">
-              <PropertyRef Name="id" />
-            </Principal>
-            <Dependent Role="Teams">
-              <PropertyRef Name="managed_by" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -373,6 +349,42 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_SessionSports_Users">
+          <End Role="Users" Type="Self.Users" Multiplicity="1" />
+          <End Role="SessionSports" Type="Self.SessionSports" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="SessionSports">
+              <PropertyRef Name="managed_by" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Teams_Teams">
+          <End Role="Teams" Type="Self.Teams" Multiplicity="1" />
+          <End Role="Teams1" Type="Self.Teams" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="Teams">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Teams1">
+              <PropertyRef Name="id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Teams_Users">
+          <End Role="Users" Type="Self.Users" Multiplicity="1" />
+          <End Role="Teams" Type="Self.Teams" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Teams">
+              <PropertyRef Name="caption_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_TurnBaseGames_Fixtures">
           <End Role="Fixtures" Type="Self.Fixtures" Multiplicity="1" />
           <End Role="TurnBaseGames" Type="Self.TurnBaseGames" Multiplicity="*" />
@@ -429,10 +441,6 @@
             <End Role="Sports" EntitySet="Sports" />
             <End Role="Rules" EntitySet="Rules" />
           </AssociationSet>
-          <AssociationSet Name="FK__SessionSp__manag__32AB8735" Association="Self.FK__SessionSp__manag__32AB8735">
-            <End Role="Users" EntitySet="Users" />
-            <End Role="SessionSports" EntitySet="SessionSports" />
-          </AssociationSet>
           <AssociationSet Name="FK__SessionSp__sessi__30C33EC3" Association="Self.FK__SessionSp__sessi__30C33EC3">
             <End Role="Sessions" EntitySet="Sessions" />
             <End Role="SessionSports" EntitySet="SessionSports" />
@@ -440,10 +448,6 @@
           <AssociationSet Name="FK__SessionSp__sport__31B762FC" Association="Self.FK__SessionSp__sport__31B762FC">
             <End Role="Sports" EntitySet="Sports" />
             <End Role="SessionSports" EntitySet="SessionSports" />
-          </AssociationSet>
-          <AssociationSet Name="FK__Teams__managed_b__0A688BB1" Association="Self.FK__Teams__managed_b__0A688BB1">
-            <End Role="Users" EntitySet="Users" />
-            <End Role="Teams" EntitySet="Teams" />
           </AssociationSet>
           <AssociationSet Name="FK__Teams__session_i__0880433F" Association="Self.FK__Teams__session_i__0880433F">
             <End Role="Sessions" EntitySet="Sessions" />
@@ -500,6 +504,18 @@
           <AssociationSet Name="FK_PointsBaseScore_Teams" Association="Self.FK_PointsBaseScore_Teams">
             <End Role="Teams" EntitySet="Teams" />
             <End Role="PointsBaseScore" EntitySet="PointsBaseScore" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SessionSports_Users" Association="Self.FK_SessionSports_Users">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="SessionSports" EntitySet="SessionSports" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Teams_Teams" Association="Self.FK_Teams_Teams">
+            <End Role="Teams" EntitySet="Teams" />
+            <End Role="Teams1" EntitySet="Teams" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Teams_Users" Association="Self.FK_Teams_Users">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Teams" EntitySet="Teams" />
           </AssociationSet>
           <AssociationSet Name="FK_TurnBaseGames_Fixtures" Association="Self.FK_TurnBaseGames_Fixtures">
             <End Role="Fixtures" EntitySet="Fixtures" />
@@ -630,8 +646,8 @@
           <Property Name="managed_by" Type="Int32" Nullable="false" />
           <Property Name="no_of_teams" Type="Int32" />
           <NavigationProperty Name="Session" Relationship="Self.FK__SessionSp__sessi__30C33EC3" FromRole="SessionSports" ToRole="Sessions" />
-          <NavigationProperty Name="User" Relationship="Self.FK__SessionSp__manag__32AB8735" FromRole="SessionSports" ToRole="Users" />
           <NavigationProperty Name="Sport" Relationship="Self.FK__SessionSp__sport__31B762FC" FromRole="SessionSports" ToRole="Sports" />
+          <NavigationProperty Name="User" Relationship="Self.FK_SessionSports_Users" FromRole="SessionSports" ToRole="Users" />
         </EntityType>
         <EntityType Name="Sport">
           <Key>
@@ -662,7 +678,7 @@
           <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="name" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="className" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="managed_by" Type="Int32" Nullable="false" />
+          <Property Name="caption_id" Type="Int32" Nullable="false" />
           <Property Name="session_id" Type="Int32" Nullable="false" />
           <Property Name="sports_id" Type="Int32" Nullable="false" />
           <Property Name="image_path" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
@@ -675,7 +691,9 @@
           <NavigationProperty Name="PointsBaseScores" Relationship="Self.FK_PointsBaseScore_Teams" FromRole="Teams" ToRole="PointsBaseScore" />
           <NavigationProperty Name="Session" Relationship="Self.FK__Teams__session_i__0880433F" FromRole="Teams" ToRole="Sessions" />
           <NavigationProperty Name="Sport" Relationship="Self.FK__Teams__sports_id__09746778" FromRole="Teams" ToRole="Sports" />
-          <NavigationProperty Name="User" Relationship="Self.FK__Teams__managed_b__0A688BB1" FromRole="Teams" ToRole="Users" />
+          <NavigationProperty Name="Teams1" Relationship="Self.FK_Teams_Teams" FromRole="Teams" ToRole="Teams1" />
+          <NavigationProperty Name="Team1" Relationship="Self.FK_Teams_Teams" FromRole="Teams1" ToRole="Teams" />
+          <NavigationProperty Name="User" Relationship="Self.FK_Teams_Users" FromRole="Teams" ToRole="Users" />
           <NavigationProperty Name="TurnBaseGames" Relationship="Self.FK_TurnBaseGames_Teams" FromRole="Teams" ToRole="TurnBaseGames" />
           <NavigationProperty Name="TurnBaseGames1" Relationship="Self.FK_TurnBaseGames_Teams1" FromRole="Teams" ToRole="TurnBaseGames" />
         </EntityType>
@@ -700,8 +718,8 @@
           <Property Name="registration_no" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="password" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="role" Type="String" MaxLength="25" FixedLength="false" Unicode="false" />
-          <NavigationProperty Name="SessionSports" Relationship="Self.FK__SessionSp__manag__32AB8735" FromRole="Users" ToRole="SessionSports" />
-          <NavigationProperty Name="Teams" Relationship="Self.FK__Teams__managed_b__0A688BB1" FromRole="Users" ToRole="Teams" />
+          <NavigationProperty Name="SessionSports" Relationship="Self.FK_SessionSports_Users" FromRole="Users" ToRole="SessionSports" />
+          <NavigationProperty Name="Teams" Relationship="Self.FK_Teams_Users" FromRole="Users" ToRole="Teams" />
         </EntityType>
         <Association Name="FK_Commets_Fixtures">
           <End Role="Fixtures" Type="Self.Fixture" Multiplicity="1" />
@@ -895,18 +913,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK__SessionSp__manag__32AB8735">
-          <End Role="Users" Type="Self.User" Multiplicity="1" />
-          <End Role="SessionSports" Type="Self.SessionSport" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Users">
-              <PropertyRef Name="id" />
-            </Principal>
-            <Dependent Role="SessionSports">
-              <PropertyRef Name="managed_by" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <Association Name="FK__SessionSp__sport__31B762FC">
           <End Role="Sports" Type="Self.Sport" Multiplicity="1" />
           <End Role="SessionSports" Type="Self.SessionSport" Multiplicity="*" />
@@ -916,6 +922,18 @@
             </Principal>
             <Dependent Role="SessionSports">
               <PropertyRef Name="sports_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SessionSports_Users">
+          <End Role="Users" Type="Self.User" Multiplicity="1" />
+          <End Role="SessionSports" Type="Self.SessionSport" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="SessionSports">
+              <PropertyRef Name="managed_by" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -931,7 +949,19 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK__Teams__managed_b__0A688BB1">
+        <Association Name="FK_Teams_Teams">
+          <End Role="Teams" Type="Self.Team" Multiplicity="1" />
+          <End Role="Teams1" Type="Self.Team" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="Teams">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Teams1">
+              <PropertyRef Name="id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Teams_Users">
           <End Role="Users" Type="Self.User" Multiplicity="1" />
           <End Role="Teams" Type="Self.Team" Multiplicity="*" />
           <ReferentialConstraint>
@@ -939,7 +969,7 @@
               <PropertyRef Name="id" />
             </Principal>
             <Dependent Role="Teams">
-              <PropertyRef Name="managed_by" />
+              <PropertyRef Name="caption_id" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -1047,19 +1077,23 @@
             <End Role="Sessions" EntitySet="Sessions" />
             <End Role="Teams" EntitySet="Teams" />
           </AssociationSet>
-          <AssociationSet Name="FK__SessionSp__manag__32AB8735" Association="Self.FK__SessionSp__manag__32AB8735">
-            <End Role="Users" EntitySet="Users" />
-            <End Role="SessionSports" EntitySet="SessionSports" />
-          </AssociationSet>
           <AssociationSet Name="FK__SessionSp__sport__31B762FC" Association="Self.FK__SessionSp__sport__31B762FC">
             <End Role="Sports" EntitySet="Sports" />
+            <End Role="SessionSports" EntitySet="SessionSports" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SessionSports_Users" Association="Self.FK_SessionSports_Users">
+            <End Role="Users" EntitySet="Users" />
             <End Role="SessionSports" EntitySet="SessionSports" />
           </AssociationSet>
           <AssociationSet Name="FK__Teams__sports_id__09746778" Association="Self.FK__Teams__sports_id__09746778">
             <End Role="Sports" EntitySet="Sports" />
             <End Role="Teams" EntitySet="Teams" />
           </AssociationSet>
-          <AssociationSet Name="FK__Teams__managed_b__0A688BB1" Association="Self.FK__Teams__managed_b__0A688BB1">
+          <AssociationSet Name="FK_Teams_Teams" Association="Self.FK_Teams_Teams">
+            <End Role="Teams" EntitySet="Teams" />
+            <End Role="Teams1" EntitySet="Teams" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Teams_Users" Association="Self.FK_Teams_Users">
             <End Role="Users" EntitySet="Users" />
             <End Role="Teams" EntitySet="Teams" />
           </AssociationSet>
@@ -1204,7 +1238,7 @@
                 <ScalarProperty Name="id" ColumnName="id" />
                 <ScalarProperty Name="name" ColumnName="name" />
                 <ScalarProperty Name="className" ColumnName="className" />
-                <ScalarProperty Name="managed_by" ColumnName="managed_by" />
+                <ScalarProperty Name="caption_id" ColumnName="caption_id" />
                 <ScalarProperty Name="session_id" ColumnName="session_id" />
                 <ScalarProperty Name="sports_id" ColumnName="sports_id" />
                 <ScalarProperty Name="image_path" ColumnName="image_path" />

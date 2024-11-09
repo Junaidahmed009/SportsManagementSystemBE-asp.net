@@ -31,98 +31,88 @@ namespace SportsManagementSystemBE.Controllers
 
         }
 
-
         [HttpPost]
-        public HttpResponseMessage Teamandstudentsdata(Team team,Student student)
+        public HttpResponseMessage PostTeamadata(Team team)
         {
             try
             {
-                ////Check if the Object is null or not get all its properties and checked.
-                //if (team == null || team.GetType().GetProperties().Any(prop => prop.GetValue(team) == null))
-                //{
-                //    return Request.CreateResponse(HttpStatusCode.BadRequest, "Team data is incomplete or missing.");
-                //}
-                if (team == null || team.name == null || team.className == null || team.managed_by==0  || team.image_path == null) {
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, "Team data is incomplete or missing.");
-                }
-
-                // Step 2: Map the Team object to a TeamDTO
                 TeamDTOs teamDto = new TeamDTOs
                 {
                     Name = team.name,
                     ClassName = team.className,
-                    Managed_by = team.managed_by,
+                    Caption_id=team.caption_id,
+                    Sports_id = team.sports_id,
                     Image_path = team.image_path,
-                    TeamStatus=team.teamStatus
-                       
+                    TeamStatus = team.teamStatus,
+                    //Session_id = latestSession.id // Assign session ID from latest session
                 };
-
-                //// Step 3: Validate the DTO (Team name and class name cannot be empty)
-                //if (string.IsNullOrEmpty(teamDto.Name) || string.IsNullOrEmpty(teamDto.ClassName))
-                //{
-                //    return Request.CreateResponse(HttpStatusCode.BadRequest, "Team name and class name cannot be empty.");
-                //}
-
-                //Pick the lateset session id.
-                var latestSession=db.Sessions.OrderByDescending(s=>s.endDate).FirstOrDefault();
+                //Get Latest session object
+                var latestSession = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
                 if (latestSession == null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.NotFound,"not  found any latest sessions");
+                    return Request.CreateResponse(HttpStatusCode.Conflict,new {errorcode=1});//"not found latest session"
                 }
-
-                var UserExists = db.Users.Any(s => s.id == teamDto.Managed_by);
-                //var sportsExists = db.Sports.Any(s => s.id == teamDto.Sports_id);
-                if (!UserExists)
+                if (DateTime.Now > latestSession.startDate)
                 {
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, "No user Found in table");
+                    return Request.CreateResponse(HttpStatusCode.Conflict,new { errorcode = 2});//"The latest session has ended"
                 }
-
-                var sessionsportsdata=db.SessionSports.FirstOrDefault(s=>s.managed_by == teamDto.Managed_by &&
-                s.session_id==latestSession.id);
-                if (sessionsportsdata==null)
+                // Check if the Team name already exists in this session
+                bool teamnameExists = db.Teams.Any(t => t.name == teamDto.Name && t.session_id == latestSession.id );
+                if (teamnameExists)
                 {
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, "the data from session sports table is empty");
+                    return Request.CreateResponse(HttpStatusCode.Conflict, new { errorcode = 3});//, "team exists with the same name"
                 }
 
-                // Step 5: Check if a team with the same name already exists in the same session
-                var teamExists = db.Teams.Any(t => t.name == teamDto.Name &&
-                                                    t.session_id == teamDto.Session_id);
-
-                if (teamExists)
+                // Check if the sport exists in the sports table
+                var sportsExists = db.Sports.FirstOrDefault(s => s.id == teamDto.Sports_id);
+                if (sportsExists == null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.Conflict, "A team with this name already exists in this session and sport.");
+                    return Request.CreateResponse(HttpStatusCode.NotFound, new { errorcode = 1});//"No sport exists with the given ID."
                 }
+
+                // Check if the captain exists in the users table with the appropriate role
+                var captionExists = db.Users.FirstOrDefault(u => u.id == teamDto.Caption_id &&
+                                                                  (u.role == "user" || u.role == "caption"));
+                if (captionExists == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, new { errorcode = 2});
+                }
+                //check if the user is caption of another team in latest session
+                bool isalreadycaption = db.Teams.Any(t => t.caption_id == captionExists.id && t.session_id == latestSession.id);
+                if (isalreadycaption) {
+                    return Request.CreateResponse(HttpStatusCode.Conflict, new { errorcode = 4});//"User is already the captain of a team in the latest session."
+                }
+                //team status
                 if (teamDto.TeamStatus != true && teamDto.TeamStatus != false)
                 {
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid TeamStatus value: it must be true (1) or false (0).");
+                    return Request.CreateResponse(HttpStatusCode.Conflict, new { errorcode = 5}); //"Invalid TeamStatus value: it must be true (1) or false (0)."
                 }
-
-
-
-                // Step 6: Create a new Team entity based on the DTO in db
                 var newTeam = new Team
                 {
                     name = teamDto.Name,
                     className = teamDto.ClassName,
+                    caption_id = teamDto.Caption_id,
                     session_id = latestSession.id,
-                    managed_by = teamDto.Managed_by,
-                    sports_id = sessionsportsdata.sports_id,    
+                    sports_id = teamDto.Sports_id,
                     image_path = teamDto.Image_path,
-                    teamStatus = teamDto.TeamStatus,
-                    
+                    teamStatus = teamDto.TeamStatus
                 };
 
                 db.Teams.Add(newTeam);
                 db.SaveChanges();
+                //sending object to front end.
+                var response = new
+                {
+                    newTeam.id
+                };
 
-                return Request.CreateResponse(HttpStatusCode.Created,newTeam);
+                return Request.CreateResponse(HttpStatusCode.Created,response);
             }
             catch (Exception ex)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
-
 
 
 

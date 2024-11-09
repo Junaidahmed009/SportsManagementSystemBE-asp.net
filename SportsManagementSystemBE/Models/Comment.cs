@@ -9,9 +9,9 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System; using Newtonsoft.Json;
+    using System; using Newtonsoft.Json; 
     using System.Collections.Generic;
-
+    
     public partial class Comment
     {
         public int id { get; set; }

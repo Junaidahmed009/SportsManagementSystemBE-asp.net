@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System; using Newtonsoft.Json;
+    using System; using Newtonsoft.Json; 
     using System.Collections.Generic;
     
     public partial class Team
@@ -30,7 +30,7 @@ namespace SportsManagementSystemBE.Models
         public int id { get; set; }
         public string name { get; set; }
         public string className { get; set; }
-        public int managed_by { get; set; }
+        public int caption_id { get; set; }
         public int session_id { get; set; }
         public int sports_id { get; set; }
         public string image_path { get; set; }
@@ -50,6 +50,8 @@ namespace SportsManagementSystemBE.Models
         [JsonIgnore] public virtual ICollection<PointsBaseScore> PointsBaseScores { get; set; }
         [JsonIgnore] public virtual Session Session { get; set; }
         [JsonIgnore] public virtual Sport Sport { get; set; }
+        [JsonIgnore] public virtual Team Teams1 { get; set; }
+        [JsonIgnore] public virtual Team Team1 { get; set; }
         [JsonIgnore] public virtual User User { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         [JsonIgnore] public virtual ICollection<TurnBaseGame> TurnBaseGames { get; set; }

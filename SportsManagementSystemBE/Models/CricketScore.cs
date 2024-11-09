@@ -7,9 +7,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+
 namespace SportsManagementSystemBE.Models
 {
-    using System; using Newtonsoft.Json;
+    using System; using Newtonsoft.Json; 
     using System.Collections.Generic;
     
     public partial class CricketScore
