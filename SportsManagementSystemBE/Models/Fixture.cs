@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System; using Newtonsoft.Json; 
+    using System;  using Newtonsoft.Json;
     using System.Collections.Generic;
     
     public partial class Fixture
@@ -21,26 +21,33 @@ namespace SportsManagementSystemBE.Models
             this.CricketScores = new HashSet<CricketScore>();
             this.FixturesImages = new HashSet<FixturesImage>();
             this.GoalBaseScores = new HashSet<GoalBaseScore>();
+            this.Match_events = new HashSet<Match_events>();
             this.PointsBaseScores = new HashSet<PointsBaseScore>();
             this.TurnBaseGames = new HashSet<TurnBaseGame>();
         }
     
         public int id { get; set; }
-        public int team1_id { get; set; }
-        public int team2_id { get; set; }
+        public Nullable<int> team1_id { get; set; }
+        public Nullable<int> team2_id { get; set; }
         public System.DateTime matchDate { get; set; }
         public string venue { get; set; }
+        public string match_type { get; set; }
+        public Nullable<int> winner_id { get; set; }
+        public Nullable<int> sessionSports_id { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         [JsonIgnore] public virtual ICollection<Comment> Comments { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         [JsonIgnore] public virtual ICollection<CricketScore> CricketScores { get; set; }
+        [JsonIgnore] public virtual SessionSport SessionSport { get; set; }
         [JsonIgnore] public virtual Team Team { get; set; }
         [JsonIgnore] public virtual Team Team1 { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         [JsonIgnore] public virtual ICollection<FixturesImage> FixturesImages { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         [JsonIgnore] public virtual ICollection<GoalBaseScore> GoalBaseScores { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        [JsonIgnore] public virtual ICollection<Match_events> Match_events { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         [JsonIgnore] public virtual ICollection<PointsBaseScore> PointsBaseScores { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

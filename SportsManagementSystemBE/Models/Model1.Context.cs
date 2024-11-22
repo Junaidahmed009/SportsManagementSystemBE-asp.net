@@ -30,6 +30,7 @@ namespace SportsManagementSystemBE.Models
         public virtual DbSet<Fixture> Fixtures { get; set; }
         public virtual DbSet<FixturesImage> FixturesImages { get; set; }
         public virtual DbSet<GoalBaseScore> GoalBaseScores { get; set; }
+        public virtual DbSet<Match_events> Match_events { get; set; }
         public virtual DbSet<Player> Players { get; set; }
         public virtual DbSet<PointsBaseScore> PointsBaseScores { get; set; }
         public virtual DbSet<Rule> Rules { get; set; }

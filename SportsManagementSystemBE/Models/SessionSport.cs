@@ -9,17 +9,28 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System; using Newtonsoft.Json; 
+    using System;  using Newtonsoft.Json;
     using System.Collections.Generic;
     
     public partial class SessionSport
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public SessionSport()
+        {
+            this.Fixtures = new HashSet<Fixture>();
+            this.Match_events = new HashSet<Match_events>();
+        }
+    
         public int id { get; set; }
         public int session_id { get; set; }
         public int sports_id { get; set; }
         public int managed_by { get; set; }
         public Nullable<int> no_of_teams { get; set; }
     
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        [JsonIgnore] public virtual ICollection<Fixture> Fixtures { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        [JsonIgnore] public virtual ICollection<Match_events> Match_events { get; set; }
         [JsonIgnore] public virtual Session Session { get; set; }
         [JsonIgnore] public virtual Sport Sport { get; set; }
         [JsonIgnore] public virtual User User { get; set; }

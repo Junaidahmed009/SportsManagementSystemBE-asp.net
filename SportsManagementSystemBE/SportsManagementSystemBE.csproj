@@ -166,6 +166,7 @@
     <Compile Include="Controllers\CricketScoreController.cs" />
     <Compile Include="Controllers\FixtureController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\PlayersController.cs" />
     <Compile Include="Controllers\RulesController.cs" />
     <Compile Include="Controllers\SessionController.cs" />
     <Compile Include="Controllers\SportsController.cs" />
@@ -173,7 +174,9 @@
     <Compile Include="Controllers\TeamController.cs" />
     <Compile Include="Controllers\UsersController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
+    <Compile Include="DTOs\PlayersRequest.cs" />
     <Compile Include="DTOs\TeamDTOs.cs" />
+    <Compile Include="DTOs\UserRequest.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -190,6 +193,9 @@
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\GoalBaseScore.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Match_events.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\Model1.Context.cs">

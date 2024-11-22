@@ -12,14 +12,20 @@ namespace SportsManagementSystemBE.Models
     using System;  using Newtonsoft.Json;
     using System.Collections.Generic;
     
-    public partial class GoalBaseScore
+    public partial class Match_events
     {
         public int id { get; set; }
-        public int team_id { get; set; }
-        public int fixture_id { get; set; }
-        public int goals { get; set; }
+        public Nullable<int> fixture_id { get; set; }
+        public Nullable<System.DateTime> event_time { get; set; }
+        public string event_type { get; set; }
+        public string event_description { get; set; }
+        public Nullable<int> sessionSports_id { get; set; }
+        public Nullable<int> player_id { get; set; }
+        public Nullable<int> secondary_player_id { get; set; }
     
         [JsonIgnore] public virtual Fixture Fixture { get; set; }
-        [JsonIgnore] public virtual Team Team { get; set; }
+        [JsonIgnore] public virtual Player Player { get; set; }
+        [JsonIgnore] public virtual Player Player1 { get; set; }
+        [JsonIgnore] public virtual SessionSport SessionSport { get; set; }
     }
 }
