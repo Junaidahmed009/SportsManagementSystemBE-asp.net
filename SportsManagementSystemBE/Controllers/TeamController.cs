@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using static System.Collections.Specialized.BitVector32;
 
 namespace SportsManagementSystemBE.Controllers
 {
@@ -113,8 +114,29 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
+        public HttpResponseMessage GetLatestTeams()
+        {
+            try
+            {
+                var latestSession = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
+                var latestteamsList = db.Teams
+                    .Where(t => t.session_id == latestSession.id)
+                    .Select(t => new { t.id, t.name })
+                    .ToList();
+                if (latestSession== null || latestteamsList == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.Conflict);
+                }
+                return Request.CreateResponse(HttpStatusCode.OK,latestteamsList);
 
 
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
 
-    }
+
+}
 }

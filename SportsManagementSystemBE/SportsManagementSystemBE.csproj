@@ -175,6 +175,7 @@
     <Compile Include="Controllers\UsersController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="DTOs\PlayersRequest.cs" />
+    <Compile Include="DTOs\FixturesList.cs" />
     <Compile Include="DTOs\TeamDTOs.cs" />
     <Compile Include="DTOs\UserRequest.cs" />
     <Compile Include="Global.asax.cs">

@@ -1,4 +1,5 @@
-﻿using SportsManagementSystemBE.Models;
+﻿using SportsManagementSystemBE.DTOs;
+using SportsManagementSystemBE.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,54 +42,87 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
             }
         }
+[HttpPost]
+public HttpResponseMessage PostFixtures([FromBody] FixturesList schedulelist)
+{
+    try
+    {
+        //// Validate the request object
+        //if (schedulelist == null || schedulelist.Schedules == null || !schedulelist.Schedules.Any())
+        //{
+        //    return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid request: No schedules provided.");
+        //}
 
+        // Check if the user exists
+        var user = db.SessionSports.FirstOrDefault(s => s.managed_by == schedulelist.UserId);
+        //if (user == null)
+        //{
+        //    return Request.CreateResponse(HttpStatusCode.NotFound, "User not found.");
+        //}
 
-        [HttpPost]
-        public HttpResponseMessage PostFixtures(Fixture fixture) {
-            try
-            {
-                bool team1idexists = db.Teams.Any(t => t.id == fixture.team1_id);
-                bool team2idexists = db.Teams.Any(t => t.id == fixture.team2_id);
-                if (!team1idexists || !team2idexists)
-                {
-                    return Request.CreateResponse(HttpStatusCode.NotFound,"Temas id not found");
-                }
-                if (fixture == null)
-                {
-                    return Request.CreateResponse(HttpStatusCode.NotFound, "Team data is empty");
-
-                }
-                db.Fixtures.Add(fixture);
-                db.SaveChanges();
-                return Request.CreateResponse(HttpStatusCode.Created);
-
-            }
-            catch (Exception ex) {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
-            
-        }
-        
-        }
-
-        [HttpPost]
-        public HttpResponseMessage postFixtureimages(FixturesImage fixture)
+        foreach (var schedule in schedulelist.Schedules)
         {
             try
             {
-                var fixtureid = db.Fixtures.Any(f => f.id == fixture.fixtures_id);
-                if (fixtureid)
+                // Replace `0` with `null` for team IDs
+                int? team1Id = schedule.Team1_id == 0 ? (int?)null : schedule.Team1_id;
+                int? team2Id = schedule.Team2_id == 0 ? (int?)null : schedule.Team2_id;
+
+                // Create a new fixture
+                var newFixture = new Fixture
                 {
-                    return Request.CreateResponse(HttpStatusCode.NotFound,"No id found");
-                }
-                db.FixturesImages.Add(fixture);
-                db.SaveChanges();
-                return Request.CreateResponse(HttpStatusCode.Created);
+                    team1_id = team1Id,
+                    team2_id = team2Id,
+                    matchDate = schedule.MatchDate,
+                    match_type = schedule.Match_type,
+                    venue = schedule.Venue,
+                    winner_id = null, // Default to null
+                    sessionSports_id = user.id
+                };
+
+                // Add the fixture to the database
+                db.Fixtures.Add(newFixture);
             }
             catch (Exception ex)
             {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
+                // Stop immediately and return the error response
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error while processing a fixture: {ex.Message}");
             }
-
         }
+
+        // Save changes to the database
+        db.SaveChanges();
+
+        return Request.CreateResponse(HttpStatusCode.Created, "Fixtures added successfully.");
+    }
+    catch (Exception ex)
+    {
+        return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+    }
+}
+
+
+
+
+        //[HttpPost]
+        //public HttpResponseMessage PostFixtureimages(FixturesImage fixture)
+        //{
+        //    try
+        //    {
+        //        var fixtureid = db.Fixtures.Any(f => f.id == fixture.fixtures_id);
+        //        if (fixtureid)
+        //        {
+        //            return Request.CreateResponse(HttpStatusCode.NotFound,"No id found");
+        //        }
+        //        db.FixturesImages.Add(fixture);
+        //        db.SaveChanges();
+        //        return Request.CreateResponse(HttpStatusCode.Created);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
+        //    }
+
+        //}
     }
 }
