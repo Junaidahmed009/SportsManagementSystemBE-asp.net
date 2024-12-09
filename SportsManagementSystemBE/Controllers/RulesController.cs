@@ -61,6 +61,27 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error saving the rule: {ex.Message}");
             }
         }
+        [HttpGet]
+        public HttpResponseMessage FetchCricketRules()
+        {
+            try
+            {
+                var CricketRule=db.Rules.
+                   Where(r=>r.id==1).
+                   Select(r => new {r.rules_of_game}).
+                   ToList();
+                if (CricketRule == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "Rule not found.");
+                }
+                return Request.CreateResponse(HttpStatusCode.OK, CricketRule);
+
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error Fetching the rule: {ex.Message}");
+            }
+        }
 
 
     }

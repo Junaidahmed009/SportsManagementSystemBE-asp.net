@@ -136,7 +136,41 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
+        public HttpResponseMessage GetCricketTeams()
+        {
+            try
+            {
+                var latestSession = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
+                var CricketId = db.Sports.
+                    Where(s => s.games == "Cricket").
+                    Select(s => s.id).SingleOrDefault();
+                var latestCricketteams = db.Teams
+                    .Where(t => t.session_id == latestSession.id && t.sports_id==CricketId)
+                    .Join(db.Users,
+                    t=>t.caption_id,
+                    u=>u.id,
+                    (t,u) => new
+                    {t.id,t.name,t.image_path,t.teamStatus,regno=u.registration_no,username=u.name})
+                    .ToList();
+
+                    
+
+                    //.Select(t => new { t.id, t.name,t.image_path,t.teamStatus })
+                    //.ToList();
+                if (latestCricketteams==null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                }
+                return Request.CreateResponse(HttpStatusCode.OK,latestCricketteams);
 
 
-}
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
+
+    }
 }
