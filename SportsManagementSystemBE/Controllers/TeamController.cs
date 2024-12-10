@@ -1,7 +1,9 @@
-﻿using SportsManagementSystemBE.DTOs;
+﻿using Microsoft.Ajax.Utilities;
+using SportsManagementSystemBE.DTOs;
 using SportsManagementSystemBE.Models;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -30,6 +32,28 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
 
+        }
+        public HttpResponseMessage GetLatestCricketTeams()
+        {
+            try
+            {
+                var latestSession = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
+                var latestteamsList = db.Teams
+                    .Where(t => t.session_id == latestSession.id)
+                    .Select(t => new { t.id, t.name })
+                    .ToList();
+                if (latestSession == null || latestteamsList == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.Conflict);
+                }
+                return Request.CreateResponse(HttpStatusCode.OK, latestteamsList);
+
+
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
         }
 
         [HttpPost]
@@ -114,28 +138,8 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
-        public HttpResponseMessage GetLatestTeams()
-        {
-            try
-            {
-                var latestSession = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
-                var latestteamsList = db.Teams
-                    .Where(t => t.session_id == latestSession.id)
-                    .Select(t => new { t.id, t.name })
-                    .ToList();
-                if (latestSession== null || latestteamsList == null)
-                {
-                    return Request.CreateResponse(HttpStatusCode.Conflict);
-                }
-                return Request.CreateResponse(HttpStatusCode.OK,latestteamsList);
+       
 
-
-            }
-            catch (Exception ex)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
-            }
-        }
         public HttpResponseMessage GetCricketTeams()
         {
             try
@@ -170,7 +174,34 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
+        [HttpPut]
+        public HttpResponseMessage UpdateTeamStatus(int id)
+        {
+            try
+            {
+                var teamdetails = db.Teams.FirstOrDefault(t => t.id == id);
+                if (teamdetails == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "Team not found.");
+                }
 
+                if (teamdetails.teamStatus)
+                {
+                    return Request.CreateResponse(HttpStatusCode.Conflict, "Team status is already true.");
+                }
+
+                // Update the team's status
+                teamdetails.teamStatus = true;
+                db.Entry(teamdetails).State = EntityState.Modified;
+                db.SaveChanges();
+
+                return Request.CreateResponse(HttpStatusCode.OK, "Team status updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
 
     }
 }

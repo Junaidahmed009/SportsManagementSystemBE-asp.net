@@ -125,7 +125,35 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateResponse(HttpStatusCode.InternalServerError,ex);
             }
         }
+        [HttpGet]
+        public HttpResponseMessage GetTeamPlayers(int id)
+        {
+            try
+            {
+                var TeamDetails = db.Players.
+                    Where(p => p.team_id == id)
+                    .Join(db.Students,
+                    p => p.reg_no,
+                    s => s.reg_no,
+                    (p, s) => new { p.id, p.reg_no, names = s.name, })
+                    .ToList();
 
+
+                //.Select(t => new { t.id, t.name,t.image_path,t.teamStatus })
+                //.ToList();
+                if (TeamDetails == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                }
+                return Request.CreateResponse(HttpStatusCode.OK, TeamDetails);
+
+
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
 
 
 
