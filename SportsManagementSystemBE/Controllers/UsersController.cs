@@ -69,62 +69,42 @@ namespace SportsManagementSystemBE.Controllers
         }
 
 
-        //[HttpPost]
-        //public HttpResponseMessage LoginUser(User logindata)
-        //{
-        //    try
-        //    {
-        //        var user = db.Users.FirstOrDefault(u => u.registration_no == logindata.registration_no);
+        [HttpGet]
+        public HttpResponseMessage Accountuserdata(int id)
+        {
+            try
+            {
+                var latestSession = db.Sessions.OrderByDescending(s => s.endDate).FirstOrDefault();
+                var userdata = db.Users.
+                    Where(u => u.id == id).
+                    Select(u => new { u.name, u.registration_no, u.role,session=latestSession.name}).
+                    ToList();
 
-        //        if (user == null)
-        //        {
-        //            return Request.CreateResponse(HttpStatusCode.NotFound); 
-        //        }
+                if (userdata == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                }
 
-        //        if (user.password != logindata.password)
-        //        {
-        //            return Request.CreateResponse(HttpStatusCode.Unauthorized); 
-        //        }
+                return Request.CreateResponse(HttpStatusCode.OK,userdata);
+            }
+            catch (Exception ex)
+            {
 
-        //        var userid = db.Users.FirstOrDefault(u => u.registration_no == logindata.registration_no);
-        //        var latestSession = db.Sessions.OrderByDescending(s => s.endDate).FirstOrDefault();
-        //        var checkmangerid=db.SessionSports
-        //            .Where(s=>s.managed_by==)
-
-
-        //        var responseUser = new
-        //        {
-        //            user.name,
-        //            user.registration_no,
-        //            user.role
-        //        };
-
-        //        return Request.CreateResponse(HttpStatusCode.OK, responseUser); 
-        //    }
-        //    catch (Exception ex)
-        //    {
-
-        //        return Request.CreateResponse(HttpStatusCode.InternalServerError, $"An error occurred: {ex.Message}");
-        //    }
-        //}
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, $"An error occurred: {ex.Message}");
+            }
+        }
 
         [HttpPost]
         public HttpResponseMessage LoginUser(User logindata)
         {
             try
             {
-                var user = db.Users.FirstOrDefault(u => u.registration_no == logindata.registration_no && u.password==logindata.password);
+                var user = db.Users.FirstOrDefault(u => u.registration_no == logindata.registration_no && u.password == logindata.password);
 
                 if (user == null)
                 {
                     return Request.CreateResponse(HttpStatusCode.NotFound);
                 }
-
-                //if (user.password != logindata.password)
-                //{
-                //    return Request.CreateResponse(HttpStatusCode.Unauthorized);
-                //}
-
                 // Get the latest session based on endDate
                 var latestSession = db.Sessions.OrderByDescending(s => s.endDate).FirstOrDefault();
 
@@ -175,6 +155,7 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, $"An error occurred: {ex.Message}");
             }
         }
+
 
 
         [HttpPost]

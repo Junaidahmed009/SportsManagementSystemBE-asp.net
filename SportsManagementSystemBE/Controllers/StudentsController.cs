@@ -18,7 +18,7 @@ namespace SportsManagementSystemBE.Controllers
             try
             {
                 var Studentslist = db.Students
-                    .Where(s => s.final_course == course && s.section == sections && s.sem_no==semno)
+                    .Where(s => s.discipline == course && s.section == sections && s.semNo==semno)
                     .Select(s => new { s.reg_no, s.name })
                     .ToList();
                 if (!Studentslist.Any())

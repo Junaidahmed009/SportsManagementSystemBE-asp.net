@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System;  using Newtonsoft.Json;
+    using System;
     using System.Collections.Generic;
     
     public partial class FixturesImage
@@ -17,7 +17,10 @@ namespace SportsManagementSystemBE.Models
         public int id { get; set; }
         public int fixtures_id { get; set; }
         public string imagePath { get; set; }
+        public Nullable<System.DateTime> image_time { get; set; }
+        public Nullable<int> event_id { get; set; }
     
-        [JsonIgnore] public virtual Fixture Fixture { get; set; }
+        public virtual Fixture Fixture { get; set; }
+        public virtual Match_events Match_events { get; set; }
     }
 }

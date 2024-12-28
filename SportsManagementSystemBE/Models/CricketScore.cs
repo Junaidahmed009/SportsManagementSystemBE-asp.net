@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System;  using Newtonsoft.Json;
+    using System;
     using System.Collections.Generic;
     
     public partial class CricketScore
@@ -21,7 +21,7 @@ namespace SportsManagementSystemBE.Models
         public string overs { get; set; }
         public int wickets { get; set; }
     
-        [JsonIgnore] public virtual Fixture Fixture { get; set; }
-        [JsonIgnore] public virtual Team Team { get; set; }
+        public virtual Fixture Fixture { get; set; }
+        public virtual Team Team { get; set; }
     }
 }

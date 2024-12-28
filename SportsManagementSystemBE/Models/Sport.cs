@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System;  using Newtonsoft.Json;
+    using System;
     using System.Collections.Generic;
     
     public partial class Sport
@@ -25,12 +25,13 @@ namespace SportsManagementSystemBE.Models
         public int id { get; set; }
         public string games { get; set; }
         public string game_type { get; set; }
+        public string scoringType { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        [JsonIgnore] public virtual ICollection<Rule> Rules { get; set; }
+        public virtual ICollection<Rule> Rules { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        [JsonIgnore] public virtual ICollection<SessionSport> SessionSports { get; set; }
+        public virtual ICollection<SessionSport> SessionSports { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        [JsonIgnore] public virtual ICollection<Team> Teams { get; set; }
+        public virtual ICollection<Team> Teams { get; set; }
     }
 }

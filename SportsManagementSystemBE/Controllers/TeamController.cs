@@ -4,11 +4,12 @@ using SportsManagementSystemBE.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Web;
 using System.Web.Http;
-using static System.Collections.Specialized.BitVector32;
 
 namespace SportsManagementSystemBE.Controllers
 {
@@ -33,25 +34,69 @@ namespace SportsManagementSystemBE.Controllers
             }
 
         }
-        public HttpResponseMessage GetLatestCricketTeams()
+        [HttpGet]
+        public HttpResponseMessage AllApprovedTeams(int id)
         {
             try
             {
-                var latestSession = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
-                var latestteamsList = db.Teams
-                    .Where(t => t.session_id == latestSession.id)
-                    .Select(t => new { t.id, t.name })
-                    .ToList();
-                if (latestSession == null || latestteamsList == null)
+                var eventManager = db.Users.FirstOrDefault(u => u.id == id);
+                var latestSession = db.Sessions.OrderByDescending(s => s.endDate).FirstOrDefault();
+                var sessionsport = db.SessionSports.FirstOrDefault(ss => ss.managed_by == eventManager.id && ss.session_id==latestSession.id);
+                var approvedTeams = db.Teams
+                                      .Where(t => t.teamStatus == true &&
+                                      t.session_id == latestSession.id &&
+                                      t.sports_id == sessionsport.sports_id)
+                                      .Select(t => new { teamid=t.id, teamname=t.name })
+                                      .ToList();
+
+                if (!approvedTeams.Any())
                 {
-                    return Request.CreateResponse(HttpStatusCode.Conflict);
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "No approved teams found.");
                 }
-                return Request.CreateResponse(HttpStatusCode.OK, latestteamsList);
 
-
+                return Request.CreateResponse(HttpStatusCode.OK, approvedTeams);
             }
             catch (Exception ex)
             {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        public HttpResponseMessage GetAllLatestTeams(int userId)
+        {
+            try
+            {
+                // Get the latest session
+                var latestSession = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
+                if (latestSession == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "No sessions found.");
+                }
+
+                // Get user sports data for the latest session
+                var userData = db.SessionSports.FirstOrDefault(s => s.managed_by == userId && s.session_id == latestSession.id);
+                if (userData == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "User does not manage any sports for the latest session.");
+                }
+
+                // Get the list of teams for the user's sport in the latest session
+                var latestTeamsList = db.Teams
+                    .Where(t => t.sports_id == userData.sports_id && t.session_id == latestSession.id)
+                    .Select(t => new { t.id, t.name })
+                    .ToList();
+
+                if (!latestTeamsList.Any())
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "No teams found for the specified sport and session.");
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK, latestTeamsList);
+            }
+            catch (Exception ex)
+            {
+                // Log exception (e.g., using a logging framework)
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
@@ -72,12 +117,12 @@ namespace SportsManagementSystemBE.Controllers
                     //Session_id = latestSession.id // Assign session ID from latest session
                 };
                 //Get Latest session object
-                var latestSession = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
+                var latestSession = db.Sessions.OrderByDescending(s => s.endDate).FirstOrDefault();
                 if (latestSession == null)
                 {
                     return Request.CreateResponse(HttpStatusCode.Conflict,new {errorcode=1});//"not found latest session"
                 }
-                if (DateTime.Now > latestSession.startDate)
+                if (DateTime.Now > latestSession.endDate)
                 {
                     return Request.CreateResponse(HttpStatusCode.Conflict,new { errorcode = 2});//"The latest session has ended"
                 }
@@ -138,8 +183,9 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
-       
 
+        //AllTeamsbyem
+        [HttpGet]
         public HttpResponseMessage GetCricketTeams()
         {
             try
@@ -174,6 +220,7 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
+        //allteambyid
         [HttpPut]
         public HttpResponseMessage UpdateTeamStatus(int id)
         {
@@ -202,6 +249,141 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
+
+        [HttpPost]
+        public HttpResponseMessage UploadImage()
+        {
+            try
+            {
+                // Get the files from the request (multiple files support)
+                var httpRequest = HttpContext.Current.Request;
+                var uploadedFiles = httpRequest.Files;
+
+                // Check if no files are uploaded
+                if (uploadedFiles.Count == 0)
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "No images uploaded.");
+                }
+
+                // Define valid image extensions
+                var validExtensions = new List<string> { ".jpeg", ".jpg", ".png", ".webp", ".gif" };
+
+                // List to hold the image paths to return in the response
+                var imagePaths = new List<string>();
+
+                for (int i = 0; i < uploadedFiles.Count; i++)
+                {
+                    var uploadedFile = uploadedFiles[i];
+
+                    // Check if the file is valid
+                    if (uploadedFile == null || uploadedFile.ContentLength == 0)
+                    {
+                        continue; // Skip invalid files
+                    }
+
+                    // Check if the file extension is valid
+                    var extension = Path.GetExtension(uploadedFile.FileName).ToLower();
+                    if (!validExtensions.Contains(extension))
+                    {
+                        continue; // Skip invalid files
+                    }
+
+                    // Generate a unique file name for each image
+                    var fileName = Guid.NewGuid() + extension;
+
+                    // Define the upload path for the image inside Resources/uploads/teamPics
+                    var uploadPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "uploads", "teamPics");
+
+                    // Ensure the directory exists
+                    if (!Directory.Exists(uploadPath))
+                    {
+                        Directory.CreateDirectory(uploadPath);
+                    }
+
+                    // Full file path to save the image
+                    var filePath = Path.Combine(uploadPath, fileName);
+
+                    // Save the image to the file system
+                    uploadedFile.SaveAs(filePath);
+
+                    // Add the relative image path to the list (corrected to /uploads/teamPics/)
+                    var relativePath = $"/uploads/teamPics/{fileName}";
+                    imagePaths.Add(relativePath);
+                }
+
+                // Check if any images were successfully uploaded
+                if (imagePaths.Count == 0)
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "No valid images uploaded.");
+                }
+
+                // Return the image paths as a response
+                return Request.CreateResponse(HttpStatusCode.OK, imagePaths);
+            }
+            catch (Exception ex)
+            {
+                // Handle any unexpected errors
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, "An error occurred: " + ex.Message);
+            }
+        }
+
+        [HttpGet]
+        public HttpResponseMessage GetImage(string imagePath)
+        {
+            try
+            {
+                // Map the relative path to the physical file path on the server
+                var fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "uploads", imagePath.TrimStart('/'));
+
+                // Check if the file exists
+                if (!File.Exists(fullPath))
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "Image not found.");
+                }
+
+                // Read the image file as bytes
+                var imageBytes = File.ReadAllBytes(fullPath);
+
+                // Get the file extension to set the correct content type
+                var fileExtension = Path.GetExtension(imagePath).ToLower();
+                string contentType;
+
+                switch (fileExtension)
+                {
+                    case ".jpg":
+                    case ".jpeg":
+                        contentType = "image/jpeg";
+                        break;
+                    case ".png":
+                        contentType = "image/png";
+                        break;
+                    case ".gif":
+                        contentType = "image/gif";
+                        break;
+                    case ".webp":
+                        contentType = "image/webp";
+                        break;
+                    default:
+                        contentType = "application/octet-stream"; // Default for unknown file types
+                        break;
+                }
+
+                // Create the response with the image content
+                var response = Request.CreateResponse(HttpStatusCode.OK);
+                response.Content = new ByteArrayContent(imageBytes);
+                response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, "An error occurred: " + ex.Message);
+            }
+        }
+
+
+
+
 
     }
 }

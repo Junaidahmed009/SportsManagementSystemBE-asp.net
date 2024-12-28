@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System;  using Newtonsoft.Json;
+    using System;
     using System.Collections.Generic;
     
     public partial class Student
@@ -22,11 +22,12 @@ namespace SportsManagementSystemBE.Models
     
         public string reg_no { get; set; }
         public string name { get; set; }
-        public string final_course { get; set; }
-        public Nullable<int> sem_no { get; set; }
+        public string discipline { get; set; }
+        public Nullable<int> semNo { get; set; }
         public string section { get; set; }
+        public string gender { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        [JsonIgnore] public virtual ICollection<Player> Players { get; set; }
+        public virtual ICollection<Player> Players { get; set; }
     }
 }

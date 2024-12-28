@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System;  using Newtonsoft.Json;
+    using System;
     using System.Collections.Generic;
     
     public partial class Comment
@@ -18,6 +18,6 @@ namespace SportsManagementSystemBE.Models
         public int fixtures_id { get; set; }
         public string comments { get; set; }
     
-        [JsonIgnore] public virtual Fixture Fixture { get; set; }
+        public virtual Fixture Fixture { get; set; }
     }
 }
