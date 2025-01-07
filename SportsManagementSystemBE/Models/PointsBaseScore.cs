@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System;
+    using System; using Newtonsoft.Json;
     using System.Collections.Generic;
     
     public partial class PointsBaseScore
@@ -19,7 +19,7 @@ namespace SportsManagementSystemBE.Models
         public int fixture_id { get; set; }
         public int setsWon { get; set; }
     
-        public virtual Fixture Fixture { get; set; }
-        public virtual Team Team { get; set; }
+        [JsonIgnore] public virtual Fixture Fixture { get; set; }
+        [JsonIgnore] public virtual Team Team { get; set; }
     }
 }

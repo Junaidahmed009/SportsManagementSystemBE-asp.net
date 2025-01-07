@@ -9,17 +9,17 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System;
+    using System; using Newtonsoft.Json;
     using System.Collections.Generic;
     
     public partial class GoalBaseScore
     {
         public int id { get; set; }
-        public int team_id { get; set; }
-        public int fixture_id { get; set; }
+        public Nullable<int> team_id { get; set; }
+        public Nullable<int> fixture_id { get; set; }
         public int goals { get; set; }
     
-        public virtual Fixture Fixture { get; set; }
-        public virtual Team Team { get; set; }
+        [JsonIgnore] public virtual Fixture Fixture { get; set; }
+        [JsonIgnore] public virtual Team Team { get; set; }
     }
 }

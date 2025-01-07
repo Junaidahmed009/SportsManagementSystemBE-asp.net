@@ -9,18 +9,18 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System;
+    using System; using Newtonsoft.Json;
     using System.Collections.Generic;
     
     public partial class TurnBaseGame
     {
         public int id { get; set; }
-        public int fixture_id { get; set; }
-        public int winnner_id { get; set; }
-        public int loser_id { get; set; }
+        public Nullable<int> fixture_id { get; set; }
+        public Nullable<int> winnner_id { get; set; }
+        public Nullable<int> loser_id { get; set; }
     
-        public virtual Fixture Fixture { get; set; }
-        public virtual Team Team { get; set; }
-        public virtual Team Team1 { get; set; }
+        [JsonIgnore] public virtual Fixture Fixture { get; set; }
+        [JsonIgnore] public virtual Team Team { get; set; }
+        [JsonIgnore] public virtual Team Team1 { get; set; }
     }
 }

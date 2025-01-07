@@ -6,6 +6,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.WebControls;
 
 namespace SportsManagementSystemBE.Controllers
 {
@@ -47,6 +49,111 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
             }
         }
+        //this function is used to get fixtures and display for users and scoring.
+        [HttpGet]
+        public HttpResponseMessage GetUsersFixtures(int sportsId)
+        {
+            try
+            {
+                //var latestsesion = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
+                //var user = db.SessionSports.FirstOrDefault(s => s.managed_by == userid && s.session_id == latestsesion.id);
+                var sport = db.Sports.FirstOrDefault(s => s.id == sportsId);
+                // Query for the relevant fixtures based on the sport name
+                var fixturesQuery =
+                from f in db.Fixtures
+                join t1 in db.Teams on f.team1_id equals t1.id into t1Teams
+                from t1 in t1Teams.DefaultIfEmpty()
+                join t2 in db.Teams on f.team2_id equals t2.id into t2Teams
+                from t2 in t2Teams.DefaultIfEmpty()
+                join w in db.Teams on f.winner_id equals w.id into winnerTeams
+                from w in winnerTeams.DefaultIfEmpty()
+                join ss in db.SessionSports on f.sessionSports_id equals ss.id
+                join s in db.Sports on ss.sports_id equals s.id
+                where s.id == sport.id
+                select new
+                {
+                    fixture_id = f.id,
+                    //teams1id=f.team1_id,
+                    //teams2id = f.team2_id,
+                    team1_name = f.team1_id == null ? "Yet to Decide" : (t1 != null ? t1.name : "Yet to Decide"),
+                    team2_name = f.team2_id == null ? "Yet to Decide" : (t2 != null ? t2.name : "Yet to Decide"),
+                    matchdate = f.matchDate,
+                    venuee = f.venue,
+                    winner_name = f.winner_id == null ? "Match Not Started" : (w != null ? w.name : "Match Not Started"),
+                    //winnerId = f.winner_id,
+                    matchType = f.match_type,
+                    sport_name = s.games,
+                    sport_type = s.game_type
+                };
+
+                // Execute the query and get the results
+                var results = fixturesQuery.ToList();
+                if (!results.Any())
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                }
+
+                // Return the match list as a response
+                return Request.CreateResponse(HttpStatusCode.OK, results);
+            }
+            catch (Exception ex)
+            {
+                // Handle any unexpected errors
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, "An error occurred: " + ex.Message);
+            }
+        }
+        //this function is used to get fixtures and display for users and scoring.
+        [HttpGet]
+        public HttpResponseMessage GetManagerFixtures(int userid)
+        {
+            try
+            {
+                var latestsesion = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
+                var user = db.SessionSports.FirstOrDefault(s => s.managed_by == userid && s.session_id == latestsesion.id);
+                var fixturesQuery =
+                from f in db.Fixtures
+                join t1 in db.Teams on f.team1_id equals t1.id into t1Teams
+                from t1 in t1Teams.DefaultIfEmpty()
+                join t2 in db.Teams on f.team2_id equals t2.id into t2Teams
+                from t2 in t2Teams.DefaultIfEmpty()
+                join w in db.Teams on f.winner_id equals w.id into winnerTeams
+                from w in winnerTeams.DefaultIfEmpty()
+                join ss in db.SessionSports on f.sessionSports_id equals ss.id
+                join s in db.Sports on ss.sports_id equals s.id
+                where ss.id == latestsesion.id 
+                select new
+                {
+                    fixture_id = f.id,
+                    teams1id = f.team1_id,
+                    teams2id = f.team2_id,
+                    team1_name = f.team1_id == null ? "Not Selected" : (t1 != null ? t1.name : "Not Selected"),
+                    team2_name = f.team2_id == null ? "Not Selected" : (t2 != null ? t2.name : "Not Selected"),
+                    matchdate = f.matchDate,
+                    venuee = f.venue,
+                    winner_name = f.winner_id == null ? "Match Not Started" : (w != null ? w.name : "Match Not Started"),
+                    winnerId = f.winner_id,
+                    matchType = f.match_type,
+                    sport_name = s.games,
+                    sport_type = s.game_type
+                };
+
+                // Execute the query and get the results
+                var results = fixturesQuery.ToList();
+                if (!results.Any())
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                }
+
+                // Return the match list as a response
+                return Request.CreateResponse(HttpStatusCode.OK, results);
+            }
+            catch (Exception ex)
+            {
+                // Handle any unexpected errors
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, "An error occurred: " + ex.Message);
+            }
+        }
+
 
         [HttpGet]
         public HttpResponseMessage DisplayFixtures(int sportid)
@@ -130,11 +237,9 @@ namespace SportsManagementSystemBE.Controllers
         {
             try
             {
-                // Replace `0` with `null` for team IDs
                 int? team1Id = schedule.Team1_id == 0 ? (int?)null : schedule.Team1_id;
                 int? team2Id = schedule.Team2_id == 0 ? (int?)null : schedule.Team2_id;
 
-                // Create a new fixture
                 var newFixture = new Fixture
                 {
                     team1_id = team1Id,
@@ -142,21 +247,17 @@ namespace SportsManagementSystemBE.Controllers
                     matchDate = schedule.MatchDate,
                     match_type = schedule.Match_type,
                     venue = schedule.Venue,
-                    winner_id = null, // Default to null
+                    winner_id = null, 
                     sessionSports_id = user.id
                 };
 
-                // Add the fixture to the database
                 db.Fixtures.Add(newFixture);
             }
             catch (Exception ex)
             {
-                // Stop immediately and return the error response
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error while processing a fixture: {ex.Message}");
             }
         }
-
-        // Save changes to the database
         db.SaveChanges();
 
         return Request.CreateResponse(HttpStatusCode.Created, "Fixtures added successfully.");
@@ -166,26 +267,6 @@ namespace SportsManagementSystemBE.Controllers
         return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
     }
 }
-        //[HttpPost]
-        //public HttpResponseMessage PostFixtureimages(FixturesImage fixture)
-        //{
-        //    try
-        //    {
-        //        var fixtureid = db.Fixtures.Any(f => f.id == fixture.fixtures_id);
-        //        if (fixtureid)
-        //        {
-        //            return Request.CreateResponse(HttpStatusCode.NotFound,"No id found");
-        //        }
-        //        db.FixturesImages.Add(fixture);
-        //        db.SaveChanges();
-        //        return Request.CreateResponse(HttpStatusCode.Created);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
-        //    }
-
-        //}
         [HttpGet]
         public HttpResponseMessage UpdateTeams()
         {

@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System;
+    using System; using Newtonsoft.Json;
     using System.Collections.Generic;
     
     public partial class Team
@@ -35,27 +35,28 @@ namespace SportsManagementSystemBE.Models
         public int sports_id { get; set; }
         public string image_path { get; set; }
         public bool teamStatus { get; set; }
+        public string teamGender { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<CricketScore> CricketScores { get; set; }
+        [JsonIgnore] public virtual ICollection<CricketScore> CricketScores { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Fixture> Fixtures { get; set; }
+        [JsonIgnore] public virtual ICollection<Fixture> Fixtures { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Fixture> Fixtures1 { get; set; }
+        [JsonIgnore] public virtual ICollection<Fixture> Fixtures1 { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<GoalBaseScore> GoalBaseScores { get; set; }
+        [JsonIgnore] public virtual ICollection<GoalBaseScore> GoalBaseScores { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Player> Players { get; set; }
+        [JsonIgnore] public virtual ICollection<Player> Players { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<PointsBaseScore> PointsBaseScores { get; set; }
-        public virtual Session Session { get; set; }
-        public virtual Sport Sport { get; set; }
-        public virtual Team Teams1 { get; set; }
-        public virtual Team Team1 { get; set; }
-        public virtual User User { get; set; }
+        [JsonIgnore] public virtual ICollection<PointsBaseScore> PointsBaseScores { get; set; }
+        [JsonIgnore] public virtual Session Session { get; set; }
+        [JsonIgnore] public virtual Sport Sport { get; set; }
+        [JsonIgnore] public virtual Team Teams1 { get; set; }
+        [JsonIgnore] public virtual Team Team1 { get; set; }
+        [JsonIgnore] public virtual User User { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<TurnBaseGame> TurnBaseGames { get; set; }
+        [JsonIgnore] public virtual ICollection<TurnBaseGame> TurnBaseGames { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<TurnBaseGame> TurnBaseGames1 { get; set; }
+        [JsonIgnore] public virtual ICollection<TurnBaseGame> TurnBaseGames1 { get; set; }
     }
 }

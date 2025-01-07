@@ -94,12 +94,12 @@ namespace SportsManagementSystemBE.Controllers
             }
         }
 
-        [HttpPost]
-        public HttpResponseMessage LoginUser(User logindata)
+        [HttpGet]
+        public HttpResponseMessage LoginUser(string regno,string pass)
         {
             try
             {
-                var user = db.Users.FirstOrDefault(u => u.registration_no == logindata.registration_no && u.password == logindata.password);
+                var user = db.Users.FirstOrDefault(u => u.registration_no == regno && u.password == pass);
 
                 if (user == null)
                 {

@@ -4,24 +4,23 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="f4c35b16a2464f0fb4c6ecd0ddea4011" Name="Diagram1" ZoomLevel="50">
-        <EntityTypeShape EntityType="SportsManagementSystemModel.Comment" Width="1.5" PointX="10.5" PointY="13.5" IsExpanded="true" />
-        <EntityTypeShape EntityType="SportsManagementSystemModel.CricketScore" Width="1.5" PointX="10.5" PointY="10" IsExpanded="true" />
-        <EntityTypeShape EntityType="SportsManagementSystemModel.Fixture" Width="1.5" PointX="8.25" PointY="12.125" IsExpanded="true" />
-        <EntityTypeShape EntityType="SportsManagementSystemModel.FixturesImage" Width="1.5" PointX="10.5" PointY="16.25" IsExpanded="true" />
-        <EntityTypeShape EntityType="SportsManagementSystemModel.GoalBaseScore" Width="1.5" PointX="13.5" PointY="12.125" IsExpanded="true" />
-        <EntityTypeShape EntityType="SportsManagementSystemModel.Match_events" Width="1.5" PointX="13.5" PointY="15" IsExpanded="true" />
-        <EntityTypeShape EntityType="SportsManagementSystemModel.Player" Width="1.5" PointX="5.25" PointY="11.125" IsExpanded="true" />
-        <EntityTypeShape EntityType="SportsManagementSystemModel.PointsBaseScore" Width="1.5" PointX="13.5" PointY="9.125" IsExpanded="true" />
-        <EntityTypeShape EntityType="SportsManagementSystemModel.Rule" Width="1.5" PointX="3" PointY="16.5" IsExpanded="true" />
-        <EntityTypeShape EntityType="SportsManagementSystemModel.Session" Width="1.5" PointX="0.75" PointY="9.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="SportsManagementSystemModel.SessionSport" Width="1.5" PointX="6" PointY="16" IsExpanded="true" />
-        <EntityTypeShape EntityType="SportsManagementSystemModel.Sport" Width="1.5" PointX="0.75" PointY="16.25" IsExpanded="true" />
-        <EntityTypeShape EntityType="SportsManagementSystemModel.Student" Width="1.5" PointX="3" PointY="6.25" IsExpanded="true" />
-        <EntityTypeShape EntityType="SportsManagementSystemModel.Team" Width="1.5" PointX="3" PointY="9.875" IsExpanded="true" />
-        <EntityTypeShape EntityType="SportsManagementSystemModel.TurnBaseGame" Width="1.5" PointX="10.5" PointY="6.125" IsExpanded="true" />
-        <EntityTypeShape EntityType="SportsManagementSystemModel.User" Width="1.5" PointX="0.75" PointY="12.75" IsExpanded="true" />
-        <AssociationConnector Association="SportsManagementSystemModel.FK_Commets_Fixtures" ManuallyRouted="false" />
+      <Diagram DiagramId="762f84cc4bad44f2907994fa1e1e8f66" Name="Diagram1" ZoomLevel="47">
+        <EntityTypeShape EntityType="SportsManagementSystemModel.Comment" Width="1.5" PointX="0.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.CricketScore" Width="1.5" PointX="10.5" PointY="10.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.Fixture" Width="1.5" PointX="8.25" PointY="10.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.FixturesImage" Width="1.5" PointX="10.5" PointY="13.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.GoalBaseScore" Width="1.5" PointX="13.5" PointY="10.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.Match_events" Width="1.5" PointX="13.5" PointY="13.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.Player" Width="1.5" PointX="5.25" PointY="9.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.PointsBaseScore" Width="1.5" PointX="13.5" PointY="7.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.Rule" Width="1.5" PointX="3" PointY="15.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.Session" Width="1.5" PointX="0.75" PointY="8.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.SessionSport" Width="1.5" PointX="6" PointY="14.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.Sport" Width="1.5" PointX="0.75" PointY="15" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.Student" Width="1.5" PointX="3" PointY="5" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.Team" Width="1.5" PointX="3" PointY="8.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.TurnBaseGame" Width="1.5" PointX="10.5" PointY="6.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="SportsManagementSystemModel.User" Width="1.5" PointX="0.75" PointY="11.375" IsExpanded="true" />
         <AssociationConnector Association="SportsManagementSystemModel.FK_CricketScore_Fixtures" ManuallyRouted="false" />
         <AssociationConnector Association="SportsManagementSystemModel.FK_CricketScore_Teams" ManuallyRouted="false" />
         <AssociationConnector Association="SportsManagementSystemModel.FK_Fixtures_SessionSports" ManuallyRouted="false" />
@@ -42,9 +41,9 @@
         <AssociationConnector Association="SportsManagementSystemModel.FK_Players_Teams" ManuallyRouted="false" />
         <AssociationConnector Association="SportsManagementSystemModel.FK_PointsBaseScore_Teams" ManuallyRouted="false" />
         <AssociationConnector Association="SportsManagementSystemModel.FK__Rules__rules_of___2DE6D218" ManuallyRouted="false" />
-        <AssociationConnector Association="SportsManagementSystemModel.FK__SessionSp__sessi__30C33EC3" ManuallyRouted="false" />
         <AssociationConnector Association="SportsManagementSystemModel.FK__Teams__session_i__0880433F" ManuallyRouted="false" />
-        <AssociationConnector Association="SportsManagementSystemModel.FK__SessionSp__sport__31B762FC" ManuallyRouted="false" />
+        <AssociationConnector Association="SportsManagementSystemModel.FK_SessionSports_Sessions" ManuallyRouted="false" />
+        <AssociationConnector Association="SportsManagementSystemModel.FK_SessionSports_Sports" ManuallyRouted="false" />
         <AssociationConnector Association="SportsManagementSystemModel.FK_SessionSports_Users" ManuallyRouted="false" />
         <AssociationConnector Association="SportsManagementSystemModel.FK__Teams__sports_id__09746778" ManuallyRouted="false" />
         <AssociationConnector Association="SportsManagementSystemModel.FK_Teams_Teams" ManuallyRouted="false" />

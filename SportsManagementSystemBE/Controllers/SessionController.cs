@@ -14,15 +14,26 @@ namespace SportsManagementSystemBE.Controllers
         private SportsManagementSystemEntities db = new SportsManagementSystemEntities();
 
         [HttpGet]
-        public HttpResponseMessage Getsessions()
+        public HttpResponseMessage GetsessionsandSports()
         {
             try
             {
+                var sports=db.Sports.
+                    Select(s => new {s.id,s.games}).
+                    ToList();
                 var sessionDetails = db.Sessions
                .Select(s => new { s.id, s.name })
                .ToList();
-                return Request.CreateResponse(HttpStatusCode.OK, sessionDetails);
-
+                var response = new
+                {
+                    Sport = sports,
+                    session = sessionDetails
+                };
+                if (response == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                }
+                return Request.CreateResponse(HttpStatusCode.OK, response);
             }
             catch (Exception ex)
             {

@@ -102,87 +102,178 @@ namespace SportsManagementSystemBE.Controllers
         }
 
         [HttpPost]
-        public HttpResponseMessage PostTeamadata(Team team)
+        public HttpResponseMessage AddTeam(TeamDTOs teamlist)
         {
             try
             {
-                TeamDTOs teamDto = new TeamDTOs
+                var latestSession = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
+                if (latestSession == null || latestSession.startDate < DateTime.Now)
                 {
-                    Name = team.name,
-                    ClassName = team.className,
-                    Caption_id=team.caption_id,
-                    Sports_id = team.sports_id,
-                    Image_path = team.image_path,
-                    TeamStatus = team.teamStatus,
-                    //Session_id = latestSession.id // Assign session ID from latest session
-                };
-                //Get Latest session object
-                var latestSession = db.Sessions.OrderByDescending(s => s.endDate).FirstOrDefault();
-                if (latestSession == null)
-                {
-                    return Request.CreateResponse(HttpStatusCode.Conflict,new {errorcode=1});//"not found latest session"
+                    return Request.CreateResponse(HttpStatusCode.NotFound, new { errorcode = 1 });//, message = "No active session found." 
                 }
-                if (DateTime.Now > latestSession.endDate)
+                // Check if the team name already exists in the session
+                if (db.Teams.Any(t => t.name == teamlist.Name && t.session_id == latestSession.id))
                 {
-                    return Request.CreateResponse(HttpStatusCode.Conflict,new { errorcode = 2});//"The latest session has ended"
+                    return Request.CreateResponse(HttpStatusCode.Conflict, new { errorcode = 3 });//, message = "Team with the same name already exists in this session."
                 }
-                // Check if the Team name already exists in this session
-                bool teamnameExists = db.Teams.Any(t => t.name == teamDto.Name && t.session_id == latestSession.id );
-                if (teamnameExists)
+                //check if Caption exists in user table.
+                var user = db.Users.FirstOrDefault(u => u.id == teamlist.Caption_id);
+                if (user == null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.Conflict, new { errorcode = 3});//, "team exists with the same name"
+                    return Request.CreateResponse(HttpStatusCode.NotFound, new { errorcode = 5});//, message = "User not found." 
+                }
+                //check if the caption exists in student table.
+                var student = db.Students.FirstOrDefault(s => s.reg_no == user.registration_no);
+                if (student == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, new { errorcode = 6});//, message = "Student not found."
                 }
 
-                // Check if the sport exists in the sports table
-                var sportsExists = db.Sports.FirstOrDefault(s => s.id == teamDto.Sports_id);
-                if (sportsExists == null)
+                var sport = db.Sports.FirstOrDefault(s => s.id == teamlist.Sports_id);
+                if (sport == null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.NotFound, new { errorcode = 1});//"No sport exists with the given ID."
+                    return Request.CreateResponse(HttpStatusCode.NotFound, new { errorcode = 7});//, message = "Sport not found." 
                 }
 
-                // Check if the captain exists in the users table with the appropriate role
-                var captionExists = db.Users.FirstOrDefault(u => u.id == teamDto.Caption_id &&
-                                                                  (u.role == "user" || u.role == "caption"));
-                if (captionExists == null)
+                // Check if the user is already a captain in the latest session for the same sport
+                if (db.Teams.Any(t => t.caption_id == user.id && t.session_id == latestSession.id && t.sports_id == teamlist.Sports_id))
                 {
-                    return Request.CreateResponse(HttpStatusCode.NotFound, new { errorcode = 2});
+                    return Request.CreateResponse(HttpStatusCode.Conflict, new { errorcode = 4 });//, message = "User is already a captain of a team for the same sport in this session."
                 }
-                //check if the user is caption of another team in latest session
-                bool isalreadycaption = db.Teams.Any(t => t.caption_id == captionExists.id && t.session_id == latestSession.id);
-                if (isalreadycaption) {
-                    return Request.CreateResponse(HttpStatusCode.Conflict, new { errorcode = 4});//"User is already the captain of a team in the latest session."
-                }
-                //team status
-                if (teamDto.TeamStatus != true && teamDto.TeamStatus != false)
-                {
-                    return Request.CreateResponse(HttpStatusCode.Conflict, new { errorcode = 5}); //"Invalid TeamStatus value: it must be true (1) or false (0)."
-                }
+
+                // Create team
                 var newTeam = new Team
                 {
-                    name = teamDto.Name,
-                    className = teamDto.ClassName,
-                    caption_id = teamDto.Caption_id,
+                    name = teamlist.Name,
+                    className = teamlist.ClassName,
+                    caption_id = teamlist.Caption_id,
                     session_id = latestSession.id,
-                    sports_id = teamDto.Sports_id,
-                    image_path = teamDto.Image_path,
-                    teamStatus = teamDto.TeamStatus
+                    sports_id = teamlist.Sports_id,
+                    image_path = teamlist.Image_path,
+                    teamStatus = teamlist.TeamStatus,
+                    teamGender=student.gender,
                 };
 
                 db.Teams.Add(newTeam);
                 db.SaveChanges();
-                //sending object to front end.
+
+
+                // Add player data if SingleUser
+                if (teamlist.TeamType == "SingleUser")
+                {
+                    var player = new Player
+                    {
+                        reg_no = student.reg_no,
+                        team_id = newTeam.id
+                    };
+
+                    db.Players.Add(player);
+                    db.SaveChanges();
+                    return Request.CreateResponse(HttpStatusCode.Created);
+                }
                 var response = new
                 {
-                    newTeam.id
+                    newTeam.id,
                 };
 
-                return Request.CreateResponse(HttpStatusCode.Created,response);
+                return Request.CreateResponse(HttpStatusCode.OK, response);
             }
             catch (Exception ex)
             {
+                // Log the error (logging mechanism not shown here)
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
+
+
+
+        //[HttpPost]
+        //public HttpResponseMessage PostTeamadata(TeamDTOs teamlist)
+        //{
+        //    try
+        //    {
+        //        //var latestSession = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
+        //        //if (latestSession == null)
+        //        //{
+        //        //    return Request.CreateResponse(HttpStatusCode.Conflict,new {errorcode=1});//"not found latest session"
+        //        //}
+        //        //if (DateTime.Now > latestSession.startDate)
+        //        //{
+        //        //    return Request.CreateResponse(HttpStatusCode.Conflict,new { errorcode = 2});//"The latest session has ended"
+        //        //}
+        //        // Check if the Team name already exists in this session
+        //        bool teamnameExists = db.Teams.Any(t => t.name ==teamlist.Name && t.session_id == latestSession.id );
+        //        if (teamnameExists)
+        //        {
+        //            return Request.CreateResponse(HttpStatusCode.Conflict, new { errorcode = 3});//, "team exists with the same name"
+        //        }
+
+        //        // Check if the sport exists in the sports table
+        //        var sportsExists = db.Sports.FirstOrDefault(s => s.id == teamlist.Sports_id);
+        //        if (sportsExists == null)
+        //        {
+        //            return Request.CreateResponse(HttpStatusCode.NotFound, new { errorcode = 1});//"No sport exists with the given ID."
+        //        }
+
+
+        //        var getStudent = db.Students.FirstOrDefault(s => s.reg_no == captionExists.registration_no);
+        //        //team status
+        //        if (teamlist.TeamStatus != true && teamlist.TeamStatus != false)
+        //        {
+        //            return Request.CreateResponse(HttpStatusCode.Conflict, new { errorcode = 5}); //"Invalid TeamStatus value: it must be true (1) or false (0)."
+        //        }
+        //        if (teamlist.TeamType == "SingleUser")
+        //        {
+        //            //var getuser=db.Users.FirstOrDefault(u=>u.id == teamlist.Caption_id);
+
+
+        //            var singeleplayerTeam = new Team
+        //            {
+        //                name = teamlist.Name,
+        //                className = teamlist.ClassName,
+        //                caption_id = teamlist.Caption_id,
+        //                session_id = latestSession.id,
+        //                sports_id = teamlist.Sports_id,
+        //                image_path = teamlist.Image_path,
+        //                teamStatus = teamlist.TeamStatus
+        //            };
+        //            db.Teams.Add(singeleplayerTeam);
+        //            db.SaveChanges();
+        //            var playerdata = new Player
+        //            {
+        //                reg_no=getStudent.reg_no,
+        //               team_id= singeleplayerTeam.id,
+
+        //            };
+        //            return Request.CreateResponse(HttpStatusCode.OK);
+
+        //        }
+        //        var newTeam = new Team
+        //        {
+        //            name = teamlist.Name,
+        //            className =teamlist.ClassName,
+        //            caption_id = teamlist.Caption_id,
+        //            session_id = latestSession.id,
+        //            sports_id = teamlist.Sports_id,
+        //            image_path = teamlist.Image_path,
+        //            teamStatus = teamlist.TeamStatus
+        //        };
+
+
+        //        db.Teams.Add(newTeam);
+        //        db.SaveChanges();
+        //        var response = new
+        //        {
+        //            newTeam.id
+        //        };
+
+        //        return Request.CreateResponse(HttpStatusCode.Created,response);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+        //    }
+        //}
 
         //AllTeamsbyem
         [HttpGet]
@@ -256,14 +347,14 @@ namespace SportsManagementSystemBE.Controllers
             try
             {
                 // Get the files from the request (multiple files support)
-                var httpRequest = HttpContext.Current.Request;
-                var uploadedFiles = httpRequest.Files;
+                var httpRequest = HttpContext.Current.Request;//accepts full request
+                var uploadedFiles = httpRequest.Files;//handle file  from object coming from Frontend.
 
-                // Check if no files are uploaded
-                if (uploadedFiles.Count == 0)
-                {
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, "No images uploaded.");
-                }
+                //// Check if no files are uploaded
+                //if (uploadedFiles.Count == 0)
+                //{
+                //    return Request.CreateResponse(HttpStatusCode.BadRequest, "No images uploaded.");
+                //}
 
                 // Define valid image extensions
                 var validExtensions = new List<string> { ".jpeg", ".jpg", ".png", ".webp", ".gif" };

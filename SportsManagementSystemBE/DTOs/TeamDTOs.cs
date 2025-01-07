@@ -10,11 +10,12 @@ namespace SportsManagementSystemBE.DTOs
         
         public string Name { get; set; }
         public string  ClassName{ get; set; }
-        public int Session_id { get; set; }
+        //public int Session_id { get; set; }
         public int Caption_id { get; set; }
         public int Sports_id { get; set; }
         public string Image_path { get; set; }
         public bool TeamStatus { get; set; }
+        public string TeamType { get; set; }
 
     }
 }

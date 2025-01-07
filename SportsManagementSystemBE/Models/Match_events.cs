@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System;
+    using System; using Newtonsoft.Json;
     using System.Collections.Generic;
     
     public partial class Match_events
@@ -30,12 +30,12 @@ namespace SportsManagementSystemBE.Models
         public Nullable<int> secondary_player_id { get; set; }
         public Nullable<int> fielder_id { get; set; }
     
-        public virtual Fixture Fixture { get; set; }
+        [JsonIgnore] public virtual Fixture Fixture { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<FixturesImage> FixturesImages { get; set; }
-        public virtual Player Player { get; set; }
-        public virtual Player Player1 { get; set; }
-        public virtual SessionSport SessionSport { get; set; }
-        public virtual Player Player2 { get; set; }
+        [JsonIgnore] public virtual ICollection<FixturesImage> FixturesImages { get; set; }
+        [JsonIgnore] public virtual Player Player { get; set; }
+        [JsonIgnore] public virtual Player Player1 { get; set; }
+        [JsonIgnore] public virtual SessionSport SessionSport { get; set; }
+        [JsonIgnore] public virtual Player Player2 { get; set; }
     }
 }
