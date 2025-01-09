@@ -45,18 +45,26 @@ namespace SportsManagementSystemBE.Controllers
         {
             try
             {
+                var teamDetails=db.Teams.FirstOrDefault(t=>t.id==request.TeamNo);
                 var playersToAdd = new List<Player>();
                 foreach (var rollno in request.RollNumbers.Distinct())
                 {
-                    var playerExists = db.Players.Any(p => p.reg_no == rollno && p.team_id == request.TeamNo);
-                    if (playerExists)
-                    {
-                        return Request.CreateResponse(HttpStatusCode.BadRequest);//$"Player with roll number {rollno} already exists in team {request.TeamNo}."
-                    }
                     var UserExists = db.Students.Any(s => s.reg_no == rollno);
                     if (!UserExists)
                     {
                         return Request.CreateResponse(HttpStatusCode.NotFound);//, $"Student with roll number {userdata.registration_no} does not exist."
+                    }
+                    // Check if player is part of another team in the same sport and session
+                    var existingPlayerInSameSportAndSession = (from p in db.Players
+                                                               join t in db.Teams on p.team_id equals t.id
+                                                               where p.reg_no == rollno &&
+                                                                     t.sports_id == teamDetails.sports_id &&
+                                                                     t.session_id == teamDetails.session_id
+                                                               select p).FirstOrDefault();
+
+                    if (existingPlayerInSameSportAndSession != null)
+                    {
+                        return Request.CreateResponse(HttpStatusCode.Conflict,new { Rollno = rollno });
                     }
 
                     playersToAdd.Add(new Player
@@ -72,7 +80,7 @@ namespace SportsManagementSystemBE.Controllers
                     db.SaveChanges();
                 }
 
-                return Request.CreateResponse(HttpStatusCode.Created);// "Players added successfully"
+                return Request.CreateResponse(HttpStatusCode.Created);
             }
             catch (Exception ex)
             {

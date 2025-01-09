@@ -109,7 +109,17 @@ namespace SportsManagementSystemBE.Controllers
             try
             {
                 var latestsesion = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
+                if (latestsesion == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "No active session found.");
+                }
+
                 var user = db.SessionSports.FirstOrDefault(s => s.managed_by == userid && s.session_id == latestsesion.id);
+                if (user == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "User is not managing any sports in the latest session.");
+                }
+
                 var fixturesQuery =
                 from f in db.Fixtures
                 join t1 in db.Teams on f.team1_id equals t1.id into t1Teams
@@ -120,7 +130,7 @@ namespace SportsManagementSystemBE.Controllers
                 from w in winnerTeams.DefaultIfEmpty()
                 join ss in db.SessionSports on f.sessionSports_id equals ss.id
                 join s in db.Sports on ss.sports_id equals s.id
-                where ss.id == latestsesion.id 
+                where ss.id == latestsesion.id && ss.managed_by == userid
                 select new
                 {
                     fixture_id = f.id,
@@ -137,22 +147,20 @@ namespace SportsManagementSystemBE.Controllers
                     sport_type = s.game_type
                 };
 
-                // Execute the query and get the results
                 var results = fixturesQuery.ToList();
                 if (!results.Any())
                 {
-                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "No fixtures found for this user.");
                 }
 
-                // Return the match list as a response
                 return Request.CreateResponse(HttpStatusCode.OK, results);
             }
             catch (Exception ex)
             {
-                // Handle any unexpected errors
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, "An error occurred: " + ex.Message);
             }
         }
+
 
 
         [HttpGet]
