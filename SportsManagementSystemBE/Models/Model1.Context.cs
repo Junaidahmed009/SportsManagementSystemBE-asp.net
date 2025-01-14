@@ -34,6 +34,7 @@ namespace SportsManagementSystemBE.Models
         public virtual DbSet<Player> Players { get; set; }
         public virtual DbSet<PointsBaseScore> PointsBaseScores { get; set; }
         public virtual DbSet<Rule> Rules { get; set; }
+        public virtual DbSet<ScoreCard> ScoreCards { get; set; }
         public virtual DbSet<Session> Sessions { get; set; }
         public virtual DbSet<SessionSport> SessionSports { get; set; }
         public virtual DbSet<Sport> Sports { get; set; }

@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System; using Newtonsoft.Json;
+    using System;
     using System.Collections.Generic;
     
     public partial class Fixture
@@ -20,8 +20,8 @@ namespace SportsManagementSystemBE.Models
             this.CricketScores = new HashSet<CricketScore>();
             this.FixturesImages = new HashSet<FixturesImage>();
             this.GoalBaseScores = new HashSet<GoalBaseScore>();
-            this.Match_events = new HashSet<Match_events>();
             this.PointsBaseScores = new HashSet<PointsBaseScore>();
+            this.ScoreCards = new HashSet<ScoreCard>();
             this.TurnBaseGames = new HashSet<TurnBaseGame>();
         }
     
@@ -35,19 +35,19 @@ namespace SportsManagementSystemBE.Models
         public Nullable<int> sessionSports_id { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        [JsonIgnore] public virtual ICollection<CricketScore> CricketScores { get; set; }
-        [JsonIgnore] public virtual SessionSport SessionSport { get; set; }
-        [JsonIgnore] public virtual Team Team { get; set; }
-        [JsonIgnore] public virtual Team Team1 { get; set; }
+        public virtual ICollection<CricketScore> CricketScores { get; set; }
+        public virtual SessionSport SessionSport { get; set; }
+        public virtual Team Team { get; set; }
+        public virtual Team Team1 { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        [JsonIgnore] public virtual ICollection<FixturesImage> FixturesImages { get; set; }
+        public virtual ICollection<FixturesImage> FixturesImages { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        [JsonIgnore] public virtual ICollection<GoalBaseScore> GoalBaseScores { get; set; }
+        public virtual ICollection<GoalBaseScore> GoalBaseScores { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        [JsonIgnore] public virtual ICollection<Match_events> Match_events { get; set; }
+        public virtual ICollection<PointsBaseScore> PointsBaseScores { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        [JsonIgnore] public virtual ICollection<PointsBaseScore> PointsBaseScores { get; set; }
+        public virtual ICollection<ScoreCard> ScoreCards { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        [JsonIgnore] public virtual ICollection<TurnBaseGame> TurnBaseGames { get; set; }
+        public virtual ICollection<TurnBaseGame> TurnBaseGames { get; set; }
     }
 }

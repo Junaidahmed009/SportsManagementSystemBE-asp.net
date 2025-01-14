@@ -8,8 +8,10 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.InteropServices.ComTypes;
 using System.Web;
 using System.Web.Http;
+using System.Web.WebPages;
 
 namespace SportsManagementSystemBE.Controllers
 {
@@ -23,7 +25,8 @@ namespace SportsManagementSystemBE.Controllers
             try
             {
                 var checkname = db.Teams.Any(t => t.name == tname);
-                if (checkname) {
+                if (checkname)
+                {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "Team is already registered");
                 }
                 return Request.CreateResponse(HttpStatusCode.OK);
@@ -41,12 +44,12 @@ namespace SportsManagementSystemBE.Controllers
             {
                 var eventManager = db.Users.FirstOrDefault(u => u.id == id);
                 var latestSession = db.Sessions.OrderByDescending(s => s.endDate).FirstOrDefault();
-                var sessionsport = db.SessionSports.FirstOrDefault(ss => ss.managed_by == eventManager.id && ss.session_id==latestSession.id);
+                var sessionsport = db.SessionSports.FirstOrDefault(ss => ss.managed_by == eventManager.id && ss.session_id == latestSession.id);
                 var approvedTeams = db.Teams
                                       .Where(t => t.teamStatus == true &&
                                       t.session_id == latestSession.id &&
                                       t.sports_id == sessionsport.sports_id)
-                                      .Select(t => new { teamid=t.id, teamname=t.name })
+                                      .Select(t => new { teamid = t.id, teamname = t.name })
                                       .ToList();
 
                 if (!approvedTeams.Any())
@@ -120,19 +123,19 @@ namespace SportsManagementSystemBE.Controllers
                 var user = db.Users.FirstOrDefault(u => u.id == teamlist.Caption_id);
                 if (user == null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.NotFound, new { errorcode = 5});//, message = "User not found." 
+                    return Request.CreateResponse(HttpStatusCode.NotFound, new { errorcode = 5 });//, message = "User not found." 
                 }
                 //check if the caption exists in student table.
                 var student = db.Students.FirstOrDefault(s => s.reg_no == user.registration_no);
                 if (student == null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.NotFound, new { errorcode = 6});//, message = "Student not found."
+                    return Request.CreateResponse(HttpStatusCode.NotFound, new { errorcode = 6 });//, message = "Student not found."
                 }
 
                 var sport = db.Sports.FirstOrDefault(s => s.id == teamlist.Sports_id);
                 if (sport == null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.NotFound, new { errorcode = 7});//, message = "Sport not found." 
+                    return Request.CreateResponse(HttpStatusCode.NotFound, new { errorcode = 7 });//, message = "Sport not found." 
                 }
 
                 // Check if the user is already a captain in the latest session for the same sport
@@ -151,7 +154,7 @@ namespace SportsManagementSystemBE.Controllers
                     sports_id = teamlist.Sports_id,
                     image_path = teamlist.Image_path,
                     teamStatus = teamlist.TeamStatus,
-                    teamGender=student.gender,
+                    teamGender = student.gender,
                 };
 
                 db.Teams.Add(newTeam);
@@ -173,7 +176,7 @@ namespace SportsManagementSystemBE.Controllers
                 }
                 var response = new
                 {
-                    newTeam.id,
+                    newTeam.id
                 };
 
                 return Request.CreateResponse(HttpStatusCode.OK, response);
@@ -185,95 +188,69 @@ namespace SportsManagementSystemBE.Controllers
             }
         }
 
+        [HttpGet]
+        public HttpResponseMessage PlayingTeams(int fixtureId)
+        {
+            try
+            {
+                // Fetch fixture details
+                var fixture = db.Fixtures.FirstOrDefault(f => f.id == fixtureId);
+                if (fixture == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "Fixture not found.");
+                }
+
+                // Fetch team details and players in a single step for both teams
+                var team1Details = db.Teams
+                    .Where(t => t.id == fixture.team1_id)
+                    .Select(t => new
+                    {
+                        TeamId = t.id,
+                        TeamName = t.name ?? "Team undecided",
+                        Players = db.Players
+                            .Where(p => p.team_id == t.id)
+                            .Join(
+                                db.Students,
+                                p => p.reg_no,
+                                s => s.reg_no,
+                                (p, s) => new { p.id, PlayerName = s.name }
+                            ).ToList()
+                    })
+                    .FirstOrDefault();
+
+                var team2Details = db.Teams
+                    .Where(t => t.id == fixture.team2_id)
+                    .Select(t => new
+                    {
+                        TeamId = t.id,
+                        TeamName = t.name ?? "Team undecided",
+                        Players = db.Players
+                            .Where(p => p.team_id == t.id)
+                            .Join(
+                                db.Students,
+                                p => p.reg_no,
+                                s => s.reg_no,
+                                (p, s) => new { p.id, PlayerName = s.name }
+                            ).ToList()
+                    })
+                    .FirstOrDefault();
+
+                // Combine results into a response object
+                var result = new
+                {
+                    Team1 = team1Details,
+                    Team2 = team2Details
+                };
+
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
 
 
-        //[HttpPost]
-        //public HttpResponseMessage PostTeamadata(TeamDTOs teamlist)
-        //{
-        //    try
-        //    {
-        //        //var latestSession = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
-        //        //if (latestSession == null)
-        //        //{
-        //        //    return Request.CreateResponse(HttpStatusCode.Conflict,new {errorcode=1});//"not found latest session"
-        //        //}
-        //        //if (DateTime.Now > latestSession.startDate)
-        //        //{
-        //        //    return Request.CreateResponse(HttpStatusCode.Conflict,new { errorcode = 2});//"The latest session has ended"
-        //        //}
-        //        // Check if the Team name already exists in this session
-        //        bool teamnameExists = db.Teams.Any(t => t.name ==teamlist.Name && t.session_id == latestSession.id );
-        //        if (teamnameExists)
-        //        {
-        //            return Request.CreateResponse(HttpStatusCode.Conflict, new { errorcode = 3});//, "team exists with the same name"
-        //        }
-
-        //        // Check if the sport exists in the sports table
-        //        var sportsExists = db.Sports.FirstOrDefault(s => s.id == teamlist.Sports_id);
-        //        if (sportsExists == null)
-        //        {
-        //            return Request.CreateResponse(HttpStatusCode.NotFound, new { errorcode = 1});//"No sport exists with the given ID."
-        //        }
-
-
-        //        var getStudent = db.Students.FirstOrDefault(s => s.reg_no == captionExists.registration_no);
-        //        //team status
-        //        if (teamlist.TeamStatus != true && teamlist.TeamStatus != false)
-        //        {
-        //            return Request.CreateResponse(HttpStatusCode.Conflict, new { errorcode = 5}); //"Invalid TeamStatus value: it must be true (1) or false (0)."
-        //        }
-        //        if (teamlist.TeamType == "SingleUser")
-        //        {
-        //            //var getuser=db.Users.FirstOrDefault(u=>u.id == teamlist.Caption_id);
-
-
-        //            var singeleplayerTeam = new Team
-        //            {
-        //                name = teamlist.Name,
-        //                className = teamlist.ClassName,
-        //                caption_id = teamlist.Caption_id,
-        //                session_id = latestSession.id,
-        //                sports_id = teamlist.Sports_id,
-        //                image_path = teamlist.Image_path,
-        //                teamStatus = teamlist.TeamStatus
-        //            };
-        //            db.Teams.Add(singeleplayerTeam);
-        //            db.SaveChanges();
-        //            var playerdata = new Player
-        //            {
-        //                reg_no=getStudent.reg_no,
-        //               team_id= singeleplayerTeam.id,
-
-        //            };
-        //            return Request.CreateResponse(HttpStatusCode.OK);
-
-        //        }
-        //        var newTeam = new Team
-        //        {
-        //            name = teamlist.Name,
-        //            className =teamlist.ClassName,
-        //            caption_id = teamlist.Caption_id,
-        //            session_id = latestSession.id,
-        //            sports_id = teamlist.Sports_id,
-        //            image_path = teamlist.Image_path,
-        //            teamStatus = teamlist.TeamStatus
-        //        };
-
-
-        //        db.Teams.Add(newTeam);
-        //        db.SaveChanges();
-        //        var response = new
-        //        {
-        //            newTeam.id
-        //        };
-
-        //        return Request.CreateResponse(HttpStatusCode.Created,response);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
-        //    }
-        //}
 
         //AllTeamsbyem
         [HttpGet]
@@ -286,23 +263,23 @@ namespace SportsManagementSystemBE.Controllers
                     Where(s => s.games == "Cricket").
                     Select(s => s.id).SingleOrDefault();
                 var latestCricketteams = db.Teams
-                    .Where(t => t.session_id == latestSession.id && t.sports_id==CricketId)
+                    .Where(t => t.session_id == latestSession.id && t.sports_id == CricketId)
                     .Join(db.Users,
-                    t=>t.caption_id,
-                    u=>u.id,
-                    (t,u) => new
-                    {t.id,t.name,t.image_path,t.teamStatus,regno=u.registration_no,username=u.name})
+                    t => t.caption_id,
+                    u => u.id,
+                    (t, u) => new
+                    { t.id, t.name, t.image_path, t.teamStatus, regno = u.registration_no, username = u.name })
                     .ToList();
 
-                    
 
-                    //.Select(t => new { t.id, t.name,t.image_path,t.teamStatus })
-                    //.ToList();
-                if (latestCricketteams==null)
+
+                //.Select(t => new { t.id, t.name,t.image_path,t.teamStatus })
+                //.ToList();
+                if (latestCricketteams == null)
                 {
                     return Request.CreateResponse(HttpStatusCode.NotFound);
                 }
-                return Request.CreateResponse(HttpStatusCode.OK,latestCricketteams);
+                return Request.CreateResponse(HttpStatusCode.OK, latestCricketteams);
 
 
             }

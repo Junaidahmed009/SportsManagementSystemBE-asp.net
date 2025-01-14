@@ -12,14 +12,17 @@ namespace SportsManagementSystemBE.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class PointsBaseScore
+    public partial class ScoreCard
     {
         public int id { get; set; }
-        public int team_id { get; set; }
         public int fixture_id { get; set; }
-        public int setsWon { get; set; }
+        public int team_id { get; set; }
+        public int player_id { get; set; }
+        public Nullable<int> score { get; set; }
+        public Nullable<int> ball_consumed { get; set; }
     
         public virtual Fixture Fixture { get; set; }
+        public virtual Player Player { get; set; }
         public virtual Team Team { get; set; }
     }
 }

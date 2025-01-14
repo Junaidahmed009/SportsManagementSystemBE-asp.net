@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System; using Newtonsoft.Json;
+    using System;
     using System.Collections.Generic;
     
     public partial class TurnBaseGame
@@ -19,8 +19,8 @@ namespace SportsManagementSystemBE.Models
         public Nullable<int> winnner_id { get; set; }
         public Nullable<int> loser_id { get; set; }
     
-        [JsonIgnore] public virtual Fixture Fixture { get; set; }
-        [JsonIgnore] public virtual Team Team { get; set; }
-        [JsonIgnore] public virtual Team Team1 { get; set; }
+        public virtual Fixture Fixture { get; set; }
+        public virtual Team Team { get; set; }
+        public virtual Team Team1 { get; set; }
     }
 }

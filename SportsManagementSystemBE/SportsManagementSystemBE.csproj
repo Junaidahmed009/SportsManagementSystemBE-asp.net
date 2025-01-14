@@ -166,14 +166,17 @@
     <Compile Include="Controllers\CricketScoreController.cs" />
     <Compile Include="Controllers\FixtureController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\MatchEventsController.cs" />
     <Compile Include="Controllers\PlayersController.cs" />
     <Compile Include="Controllers\RulesController.cs" />
+    <Compile Include="Controllers\ScoringController.cs" />
     <Compile Include="Controllers\SessionController.cs" />
     <Compile Include="Controllers\SportsController.cs" />
     <Compile Include="Controllers\StudentsController.cs" />
     <Compile Include="Controllers\TeamController.cs" />
     <Compile Include="Controllers\UsersController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
+    <Compile Include="DTOs\CricketScoringDTO.cs" />
     <Compile Include="DTOs\FixtureUpdates.cs" />
     <Compile Include="DTOs\PlayersRequest.cs" />
     <Compile Include="DTOs\FixturesList.cs" />
@@ -222,6 +225,9 @@
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\Rule.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ScoreCard.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\Session.cs">
@@ -332,6 +338,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Resources\uploads\CricketPics\" />
     <Folder Include="Resources\uploads\teamPics\" />
   </ItemGroup>
   <ItemGroup>

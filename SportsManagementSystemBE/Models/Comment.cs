@@ -6,11 +6,10 @@
 //     Manual changes to this file will be overwritten if the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-// ctrl + h using System =using System; using Newtonsoft.Json; using Newtonsoft.Json; using Newtonsoft.Json;
-///[JsonIgnore] [JsonIgnore] public virtual=[JsonIgnore] [JsonIgnore] [JsonIgnore] public virtual.
+
 namespace SportsManagementSystemBE.Models
 {
-    using System; using Newtonsoft.Json;
+    using System;
     using System.Collections.Generic;
     
     public partial class Comment

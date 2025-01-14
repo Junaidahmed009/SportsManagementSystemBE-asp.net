@@ -109,16 +109,8 @@ namespace SportsManagementSystemBE.Controllers
             try
             {
                 var latestsesion = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
-                if (latestsesion == null)
-                {
-                    return Request.CreateResponse(HttpStatusCode.NotFound, "No active session found.");
-                }
 
                 var user = db.SessionSports.FirstOrDefault(s => s.managed_by == userid && s.session_id == latestsesion.id);
-                if (user == null)
-                {
-                    return Request.CreateResponse(HttpStatusCode.NotFound, "User is not managing any sports in the latest session.");
-                }
 
                 var fixturesQuery =
                 from f in db.Fixtures
