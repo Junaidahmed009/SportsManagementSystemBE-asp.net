@@ -80,7 +80,7 @@ namespace SportsManagementSystemBE.Controllers
                     matchdate = f.matchDate,
                     venuee = f.venue,
                     winner_name = f.winner_id == null ? "Match Not Started" : (w != null ? w.name : "Match Not Started"),
-                    //winnerId = f.winner_id,
+                    winnerId = f.winner_id,
                     matchType = f.match_type,
                     sport_name = s.games,
                     sport_type = s.game_type
