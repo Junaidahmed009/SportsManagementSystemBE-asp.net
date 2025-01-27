@@ -27,9 +27,12 @@ namespace SportsManagementSystemBE.Models
     
         public virtual DbSet<Comment> Comments { get; set; }
         public virtual DbSet<CricketScore> CricketScores { get; set; }
+        public virtual DbSet<delivery> deliveries { get; set; }
+        public virtual DbSet<Delivery_Images> Delivery_Images { get; set; }
         public virtual DbSet<Fixture> Fixtures { get; set; }
         public virtual DbSet<FixturesImage> FixturesImages { get; set; }
         public virtual DbSet<GoalBaseScore> GoalBaseScores { get; set; }
+        public virtual DbSet<ManOfTheMatch> ManOfTheMatches { get; set; }
         public virtual DbSet<Match_events> Match_events { get; set; }
         public virtual DbSet<Player> Players { get; set; }
         public virtual DbSet<PointsBaseScore> PointsBaseScores { get; set; }

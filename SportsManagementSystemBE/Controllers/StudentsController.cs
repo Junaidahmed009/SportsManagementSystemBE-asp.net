@@ -13,12 +13,12 @@ namespace SportsManagementSystemBE.Controllers
         private SportsManagementSystemEntities db = new SportsManagementSystemEntities();
 
         [HttpGet]
-        public HttpResponseMessage GetStudents(string course, string sections,int semno,string gender)
+        public HttpResponseMessage GetStudents(int semno, string sections, string course)//,string gender,, 
         {
             try
             {
                 var Studentslist = db.Students
-                    .Where(s => s.discipline == course && s.section == sections && s.semNo==semno && s.gender == gender)
+                    .Where(s =>s.semNo==semno && s.section == sections && s.discipline == course)// &&  && 
                     .Select(s => new { s.reg_no, s.name })
                     .ToList();
                 if (!Studentslist.Any())

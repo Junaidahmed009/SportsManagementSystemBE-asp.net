@@ -24,6 +24,33 @@
           <Property Name="overs" Type="varchar" MaxLength="50" Nullable="false" />
           <Property Name="wickets" Type="int" Nullable="false" />
         </EntityType>
+        <EntityType Name="deliveries">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="fixture_id" Type="int" />
+          <Property Name="team_id" Type="int" />
+          <Property Name="over_number" Type="int" />
+          <Property Name="ball_number" Type="int" />
+          <Property Name="runs_scored" Type="int" />
+          <Property Name="striker_id" Type="int" />
+          <Property Name="non_striker_id" Type="int" />
+          <Property Name="bowler_id" Type="int" />
+          <Property Name="extras" Type="varchar" MaxLength="100" />
+          <Property Name="extra_runs" Type="int" />
+          <Property Name="wicket_type" Type="varchar" MaxLength="100" />
+          <Property Name="dismissed_player_id" Type="int" />
+          <Property Name="fielder_id" Type="int" />
+        </EntityType>
+        <EntityType Name="Delivery_Images">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="image_path" Type="varchar(max)" Nullable="false" />
+          <Property Name="deliveries_id" Type="int" Nullable="false" />
+        </EntityType>
         <EntityType Name="Fixtures">
           <Key>
             <PropertyRef Name="id" />
@@ -55,6 +82,15 @@
           <Property Name="team_id" Type="int" />
           <Property Name="fixture_id" Type="int" />
           <Property Name="goals" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="ManOfTheMatch">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="fixture_id" Type="int" Nullable="false" />
+          <Property Name="player_id" Type="int" Nullable="false" />
+          <Property Name="image_path" Type="varchar(max)" Nullable="false" />
         </EntityType>
         <EntityType Name="Match_events">
           <Key>
@@ -178,6 +214,90 @@
           <Property Name="password" Type="varchar" MaxLength="100" />
           <Property Name="role" Type="varchar" MaxLength="25" />
         </EntityType>
+        <Association Name="FK__deliverie__bowle__02B25B50">
+          <End Role="Players" Type="Self.Players" Multiplicity="0..1" />
+          <End Role="deliveries" Type="Self.deliveries" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Players">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="deliveries">
+              <PropertyRef Name="bowler_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__deliverie__dismi__03A67F89">
+          <End Role="Players" Type="Self.Players" Multiplicity="0..1" />
+          <End Role="deliveries" Type="Self.deliveries" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Players">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="deliveries">
+              <PropertyRef Name="dismissed_player_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__deliverie__field__058EC7FB">
+          <End Role="Players" Type="Self.Players" Multiplicity="0..1" />
+          <End Role="deliveries" Type="Self.deliveries" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Players">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="deliveries">
+              <PropertyRef Name="fielder_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__deliverie__fixtu__7FD5EEA5">
+          <End Role="Fixtures" Type="Self.Fixtures" Multiplicity="0..1" />
+          <End Role="deliveries" Type="Self.deliveries" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Fixtures">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="deliveries">
+              <PropertyRef Name="fixture_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__deliverie__non_s__01BE3717">
+          <End Role="Players" Type="Self.Players" Multiplicity="0..1" />
+          <End Role="deliveries" Type="Self.deliveries" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Players">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="deliveries">
+              <PropertyRef Name="non_striker_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__deliverie__strik__00CA12DE">
+          <End Role="Players" Type="Self.Players" Multiplicity="0..1" />
+          <End Role="deliveries" Type="Self.deliveries" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Players">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="deliveries">
+              <PropertyRef Name="striker_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__deliverie__team___049AA3C2">
+          <End Role="Teams" Type="Self.Teams" Multiplicity="0..1" />
+          <End Role="deliveries" Type="Self.deliveries" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Teams">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="deliveries">
+              <PropertyRef Name="team_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK__Rules__rules_of___2DE6D218">
           <End Role="Sports" Type="Self.Sports" Multiplicity="1" />
           <End Role="Rules" Type="Self.Rules" Multiplicity="*" />
@@ -235,6 +355,18 @@
             </Principal>
             <Dependent Role="CricketScore">
               <PropertyRef Name="team_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Delivery_Images_deliveries">
+          <End Role="deliveries" Type="Self.deliveries" Multiplicity="1" />
+          <End Role="Delivery_Images" Type="Self.Delivery_Images" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="deliveries">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Delivery_Images">
+              <PropertyRef Name="deliveries_id" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -319,6 +451,30 @@
             </Principal>
             <Dependent Role="GoalBaseScore">
               <PropertyRef Name="team_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_ManOfTheMatch_Fixtures">
+          <End Role="Fixtures" Type="Self.Fixtures" Multiplicity="1" />
+          <End Role="ManOfTheMatch" Type="Self.ManOfTheMatch" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Fixtures">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="ManOfTheMatch">
+              <PropertyRef Name="fixture_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_ManOfTheMatch_Players">
+          <End Role="Players" Type="Self.Players" Multiplicity="1" />
+          <End Role="ManOfTheMatch" Type="Self.ManOfTheMatch" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Players">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="ManOfTheMatch">
+              <PropertyRef Name="player_id" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -505,9 +661,12 @@
         <EntityContainer Name="SportsManagementSystemModelStoreContainer">
           <EntitySet Name="Comments" EntityType="Self.Comments" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="CricketScore" EntityType="Self.CricketScore" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="deliveries" EntityType="Self.deliveries" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Delivery_Images" EntityType="Self.Delivery_Images" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Fixtures" EntityType="Self.Fixtures" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="FixturesImages" EntityType="Self.FixturesImages" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="GoalBaseScore" EntityType="Self.GoalBaseScore" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ManOfTheMatch" EntityType="Self.ManOfTheMatch" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Match_events" EntityType="Self.Match_events" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Players" EntityType="Self.Players" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="PointsBaseScore" EntityType="Self.PointsBaseScore" Schema="dbo" store:Type="Tables" />
@@ -520,6 +679,34 @@
           <EntitySet Name="Teams" EntityType="Self.Teams" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="TurnBaseGames" EntityType="Self.TurnBaseGames" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Users" EntityType="Self.Users" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK__deliverie__bowle__02B25B50" Association="Self.FK__deliverie__bowle__02B25B50">
+            <End Role="Players" EntitySet="Players" />
+            <End Role="deliveries" EntitySet="deliveries" />
+          </AssociationSet>
+          <AssociationSet Name="FK__deliverie__dismi__03A67F89" Association="Self.FK__deliverie__dismi__03A67F89">
+            <End Role="Players" EntitySet="Players" />
+            <End Role="deliveries" EntitySet="deliveries" />
+          </AssociationSet>
+          <AssociationSet Name="FK__deliverie__field__058EC7FB" Association="Self.FK__deliverie__field__058EC7FB">
+            <End Role="Players" EntitySet="Players" />
+            <End Role="deliveries" EntitySet="deliveries" />
+          </AssociationSet>
+          <AssociationSet Name="FK__deliverie__fixtu__7FD5EEA5" Association="Self.FK__deliverie__fixtu__7FD5EEA5">
+            <End Role="Fixtures" EntitySet="Fixtures" />
+            <End Role="deliveries" EntitySet="deliveries" />
+          </AssociationSet>
+          <AssociationSet Name="FK__deliverie__non_s__01BE3717" Association="Self.FK__deliverie__non_s__01BE3717">
+            <End Role="Players" EntitySet="Players" />
+            <End Role="deliveries" EntitySet="deliveries" />
+          </AssociationSet>
+          <AssociationSet Name="FK__deliverie__strik__00CA12DE" Association="Self.FK__deliverie__strik__00CA12DE">
+            <End Role="Players" EntitySet="Players" />
+            <End Role="deliveries" EntitySet="deliveries" />
+          </AssociationSet>
+          <AssociationSet Name="FK__deliverie__team___049AA3C2" Association="Self.FK__deliverie__team___049AA3C2">
+            <End Role="Teams" EntitySet="Teams" />
+            <End Role="deliveries" EntitySet="deliveries" />
+          </AssociationSet>
           <AssociationSet Name="FK__Rules__rules_of___2DE6D218" Association="Self.FK__Rules__rules_of___2DE6D218">
             <End Role="Sports" EntitySet="Sports" />
             <End Role="Rules" EntitySet="Rules" />
@@ -539,6 +726,10 @@
           <AssociationSet Name="FK_CricketScore_Teams" Association="Self.FK_CricketScore_Teams">
             <End Role="Teams" EntitySet="Teams" />
             <End Role="CricketScore" EntitySet="CricketScore" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Delivery_Images_deliveries" Association="Self.FK_Delivery_Images_deliveries">
+            <End Role="deliveries" EntitySet="deliveries" />
+            <End Role="Delivery_Images" EntitySet="Delivery_Images" />
           </AssociationSet>
           <AssociationSet Name="FK_Fixtures_SessionSports" Association="Self.FK_Fixtures_SessionSports">
             <End Role="SessionSports" EntitySet="SessionSports" />
@@ -567,6 +758,14 @@
           <AssociationSet Name="FK_GoalBaseScore_Teams" Association="Self.FK_GoalBaseScore_Teams">
             <End Role="Teams" EntitySet="Teams" />
             <End Role="GoalBaseScore" EntitySet="GoalBaseScore" />
+          </AssociationSet>
+          <AssociationSet Name="FK_ManOfTheMatch_Fixtures" Association="Self.FK_ManOfTheMatch_Fixtures">
+            <End Role="Fixtures" EntitySet="Fixtures" />
+            <End Role="ManOfTheMatch" EntitySet="ManOfTheMatch" />
+          </AssociationSet>
+          <AssociationSet Name="FK_ManOfTheMatch_Players" Association="Self.FK_ManOfTheMatch_Players">
+            <End Role="Players" EntitySet="Players" />
+            <End Role="ManOfTheMatch" EntitySet="ManOfTheMatch" />
           </AssociationSet>
           <AssociationSet Name="FK_Players_Students" Association="Self.FK_Players_Students">
             <End Role="Students" EntitySet="Students" />
@@ -655,6 +854,42 @@
           <NavigationProperty Name="Fixture" Relationship="Self.FK_CricketScore_Fixtures" FromRole="CricketScore" ToRole="Fixtures" />
           <NavigationProperty Name="Team" Relationship="Self.FK_CricketScore_Teams" FromRole="CricketScore" ToRole="Teams" />
         </EntityType>
+        <EntityType Name="delivery">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="fixture_id" Type="Int32" />
+          <Property Name="team_id" Type="Int32" />
+          <Property Name="over_number" Type="Int32" />
+          <Property Name="ball_number" Type="Int32" />
+          <Property Name="runs_scored" Type="Int32" />
+          <Property Name="striker_id" Type="Int32" />
+          <Property Name="non_striker_id" Type="Int32" />
+          <Property Name="bowler_id" Type="Int32" />
+          <Property Name="extras" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="extra_runs" Type="Int32" />
+          <Property Name="wicket_type" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="dismissed_player_id" Type="Int32" />
+          <Property Name="fielder_id" Type="Int32" />
+          <NavigationProperty Name="Player" Relationship="Self.FK__deliverie__bowle__02B25B50" FromRole="deliveries" ToRole="Players" />
+          <NavigationProperty Name="Player1" Relationship="Self.FK__deliverie__dismi__03A67F89" FromRole="deliveries" ToRole="Players" />
+          <NavigationProperty Name="Player2" Relationship="Self.FK__deliverie__field__058EC7FB" FromRole="deliveries" ToRole="Players" />
+          <NavigationProperty Name="Fixture" Relationship="Self.FK__deliverie__fixtu__7FD5EEA5" FromRole="deliveries" ToRole="Fixtures" />
+          <NavigationProperty Name="Player3" Relationship="Self.FK__deliverie__non_s__01BE3717" FromRole="deliveries" ToRole="Players" />
+          <NavigationProperty Name="Player4" Relationship="Self.FK__deliverie__strik__00CA12DE" FromRole="deliveries" ToRole="Players" />
+          <NavigationProperty Name="Team" Relationship="Self.FK__deliverie__team___049AA3C2" FromRole="deliveries" ToRole="Teams" />
+          <NavigationProperty Name="Delivery_Images" Relationship="Self.FK_Delivery_Images_deliveries" FromRole="deliveries" ToRole="Delivery_Images" />
+        </EntityType>
+        <EntityType Name="Delivery_Images">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="image_path" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="deliveries_id" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="delivery" Relationship="Self.FK_Delivery_Images_deliveries" FromRole="Delivery_Images" ToRole="deliveries" />
+        </EntityType>
         <EntityType Name="Fixture">
           <Key>
             <PropertyRef Name="id" />
@@ -668,11 +903,13 @@
           <Property Name="winner_id" Type="Int32" />
           <Property Name="sessionSports_id" Type="Int32" />
           <NavigationProperty Name="CricketScores" Relationship="Self.FK_CricketScore_Fixtures" FromRole="Fixtures" ToRole="CricketScore" />
+          <NavigationProperty Name="deliveries" Relationship="Self.FK__deliverie__fixtu__7FD5EEA5" FromRole="Fixtures" ToRole="deliveries" />
           <NavigationProperty Name="SessionSport" Relationship="Self.FK_Fixtures_SessionSports" FromRole="Fixtures" ToRole="SessionSports" />
           <NavigationProperty Name="Team" Relationship="Self.FK_Fixtures_Teams" FromRole="Fixtures" ToRole="Teams" />
           <NavigationProperty Name="Team1" Relationship="Self.FK_Fixtures_Teams1" FromRole="Fixtures" ToRole="Teams" />
           <NavigationProperty Name="FixturesImages" Relationship="Self.FK_FixturesImages_Fixtures" FromRole="Fixtures" ToRole="FixturesImages" />
           <NavigationProperty Name="GoalBaseScores" Relationship="Self.FK_GoalBaseScore_Fixtures" FromRole="Fixtures" ToRole="GoalBaseScore" />
+          <NavigationProperty Name="ManOfTheMatches" Relationship="Self.FK_ManOfTheMatch_Fixtures" FromRole="Fixtures" ToRole="ManOfTheMatch" />
           <NavigationProperty Name="PointsBaseScores" Relationship="Self.FK_PointsBaseScore_Fixtures" FromRole="Fixtures" ToRole="PointsBaseScore" />
           <NavigationProperty Name="ScoreCards" Relationship="Self.FK_ScoreCard_Fixtures" FromRole="Fixtures" ToRole="ScoreCard" />
           <NavigationProperty Name="TurnBaseGames" Relationship="Self.FK_TurnBaseGames_Fixtures" FromRole="Fixtures" ToRole="TurnBaseGames" />
@@ -700,6 +937,17 @@
           <NavigationProperty Name="Fixture" Relationship="Self.FK_GoalBaseScore_Fixtures" FromRole="GoalBaseScore" ToRole="Fixtures" />
           <NavigationProperty Name="Team" Relationship="Self.FK_GoalBaseScore_Teams" FromRole="GoalBaseScore" ToRole="Teams" />
         </EntityType>
+        <EntityType Name="ManOfTheMatch">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="fixture_id" Type="Int32" Nullable="false" />
+          <Property Name="player_id" Type="Int32" Nullable="false" />
+          <Property Name="image_path" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
+          <NavigationProperty Name="Fixture" Relationship="Self.FK_ManOfTheMatch_Fixtures" FromRole="ManOfTheMatch" ToRole="Fixtures" />
+          <NavigationProperty Name="Player" Relationship="Self.FK_ManOfTheMatch_Players" FromRole="ManOfTheMatch" ToRole="Players" />
+        </EntityType>
         <EntityType Name="Match_events">
           <Key>
             <PropertyRef Name="id" />
@@ -722,6 +970,12 @@
           <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="reg_no" Type="String" MaxLength="14" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="team_id" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="deliveries" Relationship="Self.FK__deliverie__bowle__02B25B50" FromRole="Players" ToRole="deliveries" />
+          <NavigationProperty Name="deliveries1" Relationship="Self.FK__deliverie__dismi__03A67F89" FromRole="Players" ToRole="deliveries" />
+          <NavigationProperty Name="deliveries2" Relationship="Self.FK__deliverie__field__058EC7FB" FromRole="Players" ToRole="deliveries" />
+          <NavigationProperty Name="deliveries3" Relationship="Self.FK__deliverie__non_s__01BE3717" FromRole="Players" ToRole="deliveries" />
+          <NavigationProperty Name="deliveries4" Relationship="Self.FK__deliverie__strik__00CA12DE" FromRole="Players" ToRole="deliveries" />
+          <NavigationProperty Name="ManOfTheMatches" Relationship="Self.FK_ManOfTheMatch_Players" FromRole="Players" ToRole="ManOfTheMatch" />
           <NavigationProperty Name="Student" Relationship="Self.FK_Players_Students" FromRole="Players" ToRole="Students" />
           <NavigationProperty Name="Team" Relationship="Self.FK_Players_Teams" FromRole="Players" ToRole="Teams" />
           <NavigationProperty Name="ScoreCards" Relationship="Self.FK_ScoreCard_Players" FromRole="Players" ToRole="ScoreCard" />
@@ -823,6 +1077,7 @@
           <Property Name="teamStatus" Type="Boolean" Nullable="false" />
           <Property Name="teamGender" Type="String" MaxLength="1" FixedLength="true" Unicode="false" />
           <NavigationProperty Name="CricketScores" Relationship="Self.FK_CricketScore_Teams" FromRole="Teams" ToRole="CricketScore" />
+          <NavigationProperty Name="deliveries" Relationship="Self.FK__deliverie__team___049AA3C2" FromRole="Teams" ToRole="deliveries" />
           <NavigationProperty Name="Fixtures" Relationship="Self.FK_Fixtures_Teams" FromRole="Teams" ToRole="Fixtures" />
           <NavigationProperty Name="Fixtures1" Relationship="Self.FK_Fixtures_Teams1" FromRole="Teams" ToRole="Fixtures" />
           <NavigationProperty Name="GoalBaseScores" Relationship="Self.FK_GoalBaseScore_Teams" FromRole="Teams" ToRole="GoalBaseScore" />
@@ -882,6 +1137,102 @@
             </Principal>
             <Dependent Role="CricketScore">
               <PropertyRef Name="team_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__deliverie__bowle__02B25B50">
+          <End Role="Players" Type="Self.Player" Multiplicity="0..1" />
+          <End Role="deliveries" Type="Self.delivery" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Players">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="deliveries">
+              <PropertyRef Name="bowler_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__deliverie__dismi__03A67F89">
+          <End Role="Players" Type="Self.Player" Multiplicity="0..1" />
+          <End Role="deliveries" Type="Self.delivery" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Players">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="deliveries">
+              <PropertyRef Name="dismissed_player_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__deliverie__field__058EC7FB">
+          <End Role="Players" Type="Self.Player" Multiplicity="0..1" />
+          <End Role="deliveries" Type="Self.delivery" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Players">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="deliveries">
+              <PropertyRef Name="fielder_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__deliverie__fixtu__7FD5EEA5">
+          <End Role="Fixtures" Type="Self.Fixture" Multiplicity="0..1" />
+          <End Role="deliveries" Type="Self.delivery" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Fixtures">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="deliveries">
+              <PropertyRef Name="fixture_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__deliverie__non_s__01BE3717">
+          <End Role="Players" Type="Self.Player" Multiplicity="0..1" />
+          <End Role="deliveries" Type="Self.delivery" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Players">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="deliveries">
+              <PropertyRef Name="non_striker_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__deliverie__strik__00CA12DE">
+          <End Role="Players" Type="Self.Player" Multiplicity="0..1" />
+          <End Role="deliveries" Type="Self.delivery" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Players">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="deliveries">
+              <PropertyRef Name="striker_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__deliverie__team___049AA3C2">
+          <End Role="Teams" Type="Self.Team" Multiplicity="0..1" />
+          <End Role="deliveries" Type="Self.delivery" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Teams">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="deliveries">
+              <PropertyRef Name="team_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Delivery_Images_deliveries">
+          <End Role="deliveries" Type="Self.delivery" Multiplicity="1" />
+          <End Role="Delivery_Images" Type="Self.Delivery_Images" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="deliveries">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Delivery_Images">
+              <PropertyRef Name="deliveries_id" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -945,6 +1296,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_ManOfTheMatch_Fixtures">
+          <End Role="Fixtures" Type="Self.Fixture" Multiplicity="1" />
+          <End Role="ManOfTheMatch" Type="Self.ManOfTheMatch" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Fixtures">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="ManOfTheMatch">
+              <PropertyRef Name="fixture_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_PointsBaseScore_Fixtures">
           <End Role="Fixtures" Type="Self.Fixture" Multiplicity="1" />
           <End Role="PointsBaseScore" Type="Self.PointsBaseScore" Multiplicity="*" />
@@ -1002,6 +1365,18 @@
             </Principal>
             <Dependent Role="GoalBaseScore">
               <PropertyRef Name="team_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_ManOfTheMatch_Players">
+          <End Role="Players" Type="Self.Player" Multiplicity="1" />
+          <End Role="ManOfTheMatch" Type="Self.ManOfTheMatch" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Players">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="ManOfTheMatch">
+              <PropertyRef Name="player_id" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -1188,9 +1563,12 @@
         <EntityContainer Name="SportsManagementSystemEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Comments" EntityType="Self.Comment" />
           <EntitySet Name="CricketScores" EntityType="Self.CricketScore" />
+          <EntitySet Name="deliveries" EntityType="Self.delivery" />
+          <EntitySet Name="Delivery_Images" EntityType="Self.Delivery_Images" />
           <EntitySet Name="Fixtures" EntityType="Self.Fixture" />
           <EntitySet Name="FixturesImages" EntityType="Self.FixturesImage" />
           <EntitySet Name="GoalBaseScores" EntityType="Self.GoalBaseScore" />
+          <EntitySet Name="ManOfTheMatches" EntityType="Self.ManOfTheMatch" />
           <EntitySet Name="Match_events" EntityType="Self.Match_events" />
           <EntitySet Name="Players" EntityType="Self.Player" />
           <EntitySet Name="PointsBaseScores" EntityType="Self.PointsBaseScore" />
@@ -1210,6 +1588,38 @@
           <AssociationSet Name="FK_CricketScore_Teams" Association="Self.FK_CricketScore_Teams">
             <End Role="Teams" EntitySet="Teams" />
             <End Role="CricketScore" EntitySet="CricketScores" />
+          </AssociationSet>
+          <AssociationSet Name="FK__deliverie__bowle__02B25B50" Association="Self.FK__deliverie__bowle__02B25B50">
+            <End Role="Players" EntitySet="Players" />
+            <End Role="deliveries" EntitySet="deliveries" />
+          </AssociationSet>
+          <AssociationSet Name="FK__deliverie__dismi__03A67F89" Association="Self.FK__deliverie__dismi__03A67F89">
+            <End Role="Players" EntitySet="Players" />
+            <End Role="deliveries" EntitySet="deliveries" />
+          </AssociationSet>
+          <AssociationSet Name="FK__deliverie__field__058EC7FB" Association="Self.FK__deliverie__field__058EC7FB">
+            <End Role="Players" EntitySet="Players" />
+            <End Role="deliveries" EntitySet="deliveries" />
+          </AssociationSet>
+          <AssociationSet Name="FK__deliverie__fixtu__7FD5EEA5" Association="Self.FK__deliverie__fixtu__7FD5EEA5">
+            <End Role="Fixtures" EntitySet="Fixtures" />
+            <End Role="deliveries" EntitySet="deliveries" />
+          </AssociationSet>
+          <AssociationSet Name="FK__deliverie__non_s__01BE3717" Association="Self.FK__deliverie__non_s__01BE3717">
+            <End Role="Players" EntitySet="Players" />
+            <End Role="deliveries" EntitySet="deliveries" />
+          </AssociationSet>
+          <AssociationSet Name="FK__deliverie__strik__00CA12DE" Association="Self.FK__deliverie__strik__00CA12DE">
+            <End Role="Players" EntitySet="Players" />
+            <End Role="deliveries" EntitySet="deliveries" />
+          </AssociationSet>
+          <AssociationSet Name="FK__deliverie__team___049AA3C2" Association="Self.FK__deliverie__team___049AA3C2">
+            <End Role="Teams" EntitySet="Teams" />
+            <End Role="deliveries" EntitySet="deliveries" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Delivery_Images_deliveries" Association="Self.FK_Delivery_Images_deliveries">
+            <End Role="deliveries" EntitySet="deliveries" />
+            <End Role="Delivery_Images" EntitySet="Delivery_Images" />
           </AssociationSet>
           <AssociationSet Name="FK_Fixtures_SessionSports" Association="Self.FK_Fixtures_SessionSports">
             <End Role="SessionSports" EntitySet="SessionSports" />
@@ -1231,6 +1641,10 @@
             <End Role="Fixtures" EntitySet="Fixtures" />
             <End Role="GoalBaseScore" EntitySet="GoalBaseScores" />
           </AssociationSet>
+          <AssociationSet Name="FK_ManOfTheMatch_Fixtures" Association="Self.FK_ManOfTheMatch_Fixtures">
+            <End Role="Fixtures" EntitySet="Fixtures" />
+            <End Role="ManOfTheMatch" EntitySet="ManOfTheMatches" />
+          </AssociationSet>
           <AssociationSet Name="FK_PointsBaseScore_Fixtures" Association="Self.FK_PointsBaseScore_Fixtures">
             <End Role="Fixtures" EntitySet="Fixtures" />
             <End Role="PointsBaseScore" EntitySet="PointsBaseScores" />
@@ -1250,6 +1664,10 @@
           <AssociationSet Name="FK_GoalBaseScore_Teams" Association="Self.FK_GoalBaseScore_Teams">
             <End Role="Teams" EntitySet="Teams" />
             <End Role="GoalBaseScore" EntitySet="GoalBaseScores" />
+          </AssociationSet>
+          <AssociationSet Name="FK_ManOfTheMatch_Players" Association="Self.FK_ManOfTheMatch_Players">
+            <End Role="Players" EntitySet="Players" />
+            <End Role="ManOfTheMatch" EntitySet="ManOfTheMatches" />
           </AssociationSet>
           <AssociationSet Name="FK_Players_Students" Association="Self.FK_Players_Students">
             <End Role="Students" EntitySet="Students" />
@@ -1339,6 +1757,35 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="deliveries">
+            <EntityTypeMapping TypeName="SportsManagementSystemModel.delivery">
+              <MappingFragment StoreEntitySet="deliveries">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="fixture_id" ColumnName="fixture_id" />
+                <ScalarProperty Name="team_id" ColumnName="team_id" />
+                <ScalarProperty Name="over_number" ColumnName="over_number" />
+                <ScalarProperty Name="ball_number" ColumnName="ball_number" />
+                <ScalarProperty Name="runs_scored" ColumnName="runs_scored" />
+                <ScalarProperty Name="striker_id" ColumnName="striker_id" />
+                <ScalarProperty Name="non_striker_id" ColumnName="non_striker_id" />
+                <ScalarProperty Name="bowler_id" ColumnName="bowler_id" />
+                <ScalarProperty Name="extras" ColumnName="extras" />
+                <ScalarProperty Name="extra_runs" ColumnName="extra_runs" />
+                <ScalarProperty Name="wicket_type" ColumnName="wicket_type" />
+                <ScalarProperty Name="dismissed_player_id" ColumnName="dismissed_player_id" />
+                <ScalarProperty Name="fielder_id" ColumnName="fielder_id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Delivery_Images">
+            <EntityTypeMapping TypeName="SportsManagementSystemModel.Delivery_Images">
+              <MappingFragment StoreEntitySet="Delivery_Images">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="image_path" ColumnName="image_path" />
+                <ScalarProperty Name="deliveries_id" ColumnName="deliveries_id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="Fixtures">
             <EntityTypeMapping TypeName="SportsManagementSystemModel.Fixture">
               <MappingFragment StoreEntitySet="Fixtures">
@@ -1371,6 +1818,16 @@
                 <ScalarProperty Name="team_id" ColumnName="team_id" />
                 <ScalarProperty Name="fixture_id" ColumnName="fixture_id" />
                 <ScalarProperty Name="goals" ColumnName="goals" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ManOfTheMatches">
+            <EntityTypeMapping TypeName="SportsManagementSystemModel.ManOfTheMatch">
+              <MappingFragment StoreEntitySet="ManOfTheMatch">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="fixture_id" ColumnName="fixture_id" />
+                <ScalarProperty Name="player_id" ColumnName="player_id" />
+                <ScalarProperty Name="image_path" ColumnName="image_path" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

@@ -250,6 +250,38 @@ namespace SportsManagementSystemBE.Controllers
             }
         }
 
+        [HttpGet]
+        public HttpResponseMessage GetunapprovedTeams(int id)
+        {
+            try
+            {
+                var latestSession = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
+                var userdata = db.SessionSports.FirstOrDefault(s => s.managed_by == id && s.session_id == latestSession.id);
+                if (userdata == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                }
+                var latestteams = db.Teams
+                    .Where(t => t.sports_id==userdata.sports_id)
+                    .Join(db.Users,
+                    t => t.caption_id,
+                    u => u.id,
+                    (t, u) => new
+                    { t.id, t.name, t.image_path, t.teamStatus, regno = u.registration_no, username = u.name })
+                    .ToList();
+                if (userdata == null && latestteams==null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK, latestteams);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
 
 
         //AllTeamsbyem
@@ -396,58 +428,97 @@ namespace SportsManagementSystemBE.Controllers
         }
 
         [HttpGet]
-        public HttpResponseMessage GetImage(string imagePath)
+        public HttpResponseMessage GetUserAppliedTeams(int userId)
         {
             try
-            {
-                // Map the relative path to the physical file path on the server
-                var fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "uploads", imagePath.TrimStart('/'));
+            { 
+                var result = db.Teams
+                    .Where(p => p.caption_id == userId)
+                    .Join(db.Sports,
+                        team => team.sports_id,
+                        sport => sport.id,
+                        (team, sport) => new {
+                            Tname = team.name,
+                            teamStatus = team.teamStatus,
+                            image_path = team.image_path,
+                            className = team.className,
+                            sport = sport.games // Include sport name here
+                        })
+                    .ToList();
 
-                // Check if the file exists
-                if (!File.Exists(fullPath))
-                {
-                    return Request.CreateResponse(HttpStatusCode.NotFound, "Image not found.");
-                }
+                //// Fetch the latest session
+                //var latestSession = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
+                //if (latestSession == null)
+                //{
+                //    return Request.CreateResponse(HttpStatusCode.NotFound, "No active session found.");
+                //}
 
-                // Read the image file as bytes
-                var imageBytes = File.ReadAllBytes(fullPath);
+                //// Fetch teams associated with the current user
+                //var teams = db.Teams
+                //    .Where(t => t.caption_id == userId)
+                //    .Select(t => new { t.id, t.sports_id })
+                //    .ToList();
 
-                // Get the file extension to set the correct content type
-                var fileExtension = Path.GetExtension(imagePath).ToLower();
-                string contentType;
+                //if (!teams.Any())
+                //{
+                //    return Request.CreateResponse(HttpStatusCode.NotFound, "No teams associated with the user.");
+                //}
 
-                switch (fileExtension)
-                {
-                    case ".jpg":
-                    case ".jpeg":
-                        contentType = "image/jpeg";
-                        break;
-                    case ".png":
-                        contentType = "image/png";
-                        break;
-                    case ".gif":
-                        contentType = "image/gif";
-                        break;
-                    case ".webp":
-                        contentType = "image/webp";
-                        break;
-                    default:
-                        contentType = "application/octet-stream"; // Default for unknown file types
-                        break;
-                }
+                //// Check if the latest session is valid for any of the user's teams
+                //var teamSportIds = teams.Select(t => t.sports_id).ToList();
+                //var latestSessionSport = db.SessionSports
+                //    .FirstOrDefault(s => s.session_id == latestSession.id && teamSportIds.Contains(s.sports_id));
 
-                // Create the response with the image content
-                var response = Request.CreateResponse(HttpStatusCode.OK);
-                response.Content = new ByteArrayContent(imageBytes);
-                response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+                //if (latestSessionSport == null)
+                //{
+                //    return Request.CreateResponse(HttpStatusCode.NotFound, "No sports associated with the latest session for the user's teams.");
+                //}
 
-                return response;
+                //// Query for the relevant fixtures based on the latest session and sports
+                //var fixturesQuery =
+                //    from f in db.Fixtures
+                //    join t1 in db.Teams on f.team1_id equals t1.id into t1Teams
+                //    from t1 in t1Teams.DefaultIfEmpty()
+                //    join t2 in db.Teams on f.team2_id equals t2.id into t2Teams
+                //    from t2 in t2Teams.DefaultIfEmpty()
+                //    join w in db.Teams on f.winner_id equals w.id into winnerTeams
+                //    from w in winnerTeams.DefaultIfEmpty()
+                //    join ss in db.SessionSports on f.sessionSports_id equals ss.id
+                //    join s in db.Sports on ss.sports_id equals s.id
+                //    where ss.session_id == latestSession.id && teamSportIds.Contains(ss.sports_id)
+                //    select new
+                //    {
+                //        fixture_id = f.id,
+                //        team1_name = f.team1_id == null ? "Yet to Decide" : (t1 != null ? t1.name : "Yet to Decide"),
+                //        team2_name = f.team2_id == null ? "Yet to Decide" : (t2 != null ? t2.name : "Yet to Decide"),
+                //        matchdate = f.matchDate,
+                //        venuee = f.venue,
+                //        winner_name = f.winner_id == null ? "Match Not Started" : (w != null ? w.name : "Match Not Started"),
+                //        winnerId = f.winner_id,
+                //        matchType = f.match_type,
+                //        sport_name = s.games,
+                //        sport_type = s.game_type
+                //    };
+
+                //// Execute the query and get the results
+                //var results = fixturesQuery.ToList();
+                //if (!results.Any())
+                //{
+                //    return Request.CreateResponse(HttpStatusCode.NotFound, "No fixtures found for the latest session.");
+                //}
+
+                //// Return the combined data (results and teams)
+                //var allData = new { results, teams };
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+
+               
             }
             catch (Exception ex)
             {
-                return Request.CreateResponse(HttpStatusCode.InternalServerError, "An error occurred: " + ex.Message);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
+
 
 
 

@@ -13,4 +13,12 @@ namespace SportsManagementSystemBE.DTOs
         public int Wickets { get; set; }
         public int FixtureId { get; set; }
     }
+
+    public class GoalBaseDTO
+    {
+        public int Teamid { get; set; }
+        public int Goals { get; set; }
+        public int Fixture_id { get; set; }
+    }
+
 }

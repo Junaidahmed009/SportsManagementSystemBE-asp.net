@@ -46,8 +46,16 @@ namespace SportsManagementSystemBE.Controllers
 
                 if (existingRule == null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.NotFound, "Rule not found for the given sports ID.");
+                    var addrules = new Rule
+                    {
+                        sports_id = data.sports_id,
+                        rules_of_game = data.rules_of_game,
+                    };
+                    db.Rules.Add(addrules);
+                    db.SaveChanges();
+                    return Request.CreateResponse(HttpStatusCode.OK);
                 }
+               
 
                 // Update the existing rule
                 existingRule.rules_of_game = data.rules_of_game;
@@ -62,6 +70,7 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error saving the rule: {ex.Message}");
             }
         }
+
         [HttpGet]
         public HttpResponseMessage FetchCricketRules()
         {

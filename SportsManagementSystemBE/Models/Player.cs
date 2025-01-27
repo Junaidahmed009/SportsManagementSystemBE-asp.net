@@ -17,6 +17,12 @@ namespace SportsManagementSystemBE.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Player()
         {
+            this.deliveries = new HashSet<delivery>();
+            this.deliveries1 = new HashSet<delivery>();
+            this.deliveries2 = new HashSet<delivery>();
+            this.deliveries3 = new HashSet<delivery>();
+            this.deliveries4 = new HashSet<delivery>();
+            this.ManOfTheMatches = new HashSet<ManOfTheMatch>();
             this.ScoreCards = new HashSet<ScoreCard>();
         }
     
@@ -24,6 +30,18 @@ namespace SportsManagementSystemBE.Models
         public string reg_no { get; set; }
         public int team_id { get; set; }
     
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<delivery> deliveries { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<delivery> deliveries1 { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<delivery> deliveries2 { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<delivery> deliveries3 { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<delivery> deliveries4 { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<ManOfTheMatch> ManOfTheMatches { get; set; }
         public virtual Student Student { get; set; }
         public virtual Team Team { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

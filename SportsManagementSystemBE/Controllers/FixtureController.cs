@@ -122,7 +122,8 @@ namespace SportsManagementSystemBE.Controllers
                 from w in winnerTeams.DefaultIfEmpty()
                 join ss in db.SessionSports on f.sessionSports_id equals ss.id
                 join s in db.Sports on ss.sports_id equals s.id
-                where ss.id == latestsesion.id && ss.managed_by == userid
+                where ss.managed_by == userid
+                // ss.id == latestsesion.id &&
                 select new
                 {
                     fixture_id = f.id,
