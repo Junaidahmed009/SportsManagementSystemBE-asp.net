@@ -14,79 +14,17 @@ namespace SportsManagementSystemBE.Controllers
     public class ScoringController : ApiController
     {
         private SportsManagementSystemEntities db = new SportsManagementSystemEntities();
-        //[HttpPost]
-        //public HttpResponseMessage AddOrUpdateCricketScore(CricketScoringDTO cric)
-        //{
-        //    try
-        //    {
-        //        // Fetch team based on teamName
-        //        var team = db.Teams.FirstOrDefault(t => t.id == cric.Teamid);
-
-        //        //if (team == null)
-        //        //{
-        //        //    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Team not found");
-        //        //}
-
-        //        // Check if the fixture_id exists and if the team_id is part of the fixture
-        //        var fixture = db.Fixtures.FirstOrDefault(f => f.id == cric.FixtureId);
-
-        //        if (fixture == null)
-        //        {
-        //            return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Fixture not found");
-        //        }
-
-        //        //if (fixture.team1_id != team.id && fixture.team2_id != team.id)
-        //        //{
-        //        //    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "The team is not part of the specified fixture");
-        //        //}
-
-        //        // Check if the fixture_id already exists for the given team_id in the CricketScore table
-        //        var existingScore = db.CricketScores.FirstOrDefault(cs => cs.fixture_id == cric.FixtureId && cs.team_id == team.id);
-
-        //        if (existingScore != null)
-        //        {
-        //            // Update existing record
-        //            existingScore.score = cric.Score;
-        //            existingScore.overs = cric.Over;
-        //            existingScore.wickets = cric.Wickets;
-
-        //            db.SaveChanges();
-        //            return Request.CreateResponse(HttpStatusCode.OK);//, "Cricket Score updated successfully"
-        //        }
-        //        else
-        //        {
-        //            // Insert new record
-        //            var newCricketScore = new CricketScore
-        //            {
-        //                team_id = team.id,
-        //                score = cric.Score,
-        //                overs = cric.Over,
-        //                wickets = cric.Wickets,
-        //                fixture_id = cric.FixtureId
-        //            };
-
-        //            db.CricketScores.Add(newCricketScore);
-        //            db.SaveChanges();
-
-        //            return Request.CreateResponse(HttpStatusCode.OK);//, "Cricket Score added with ID " + newCricketScore.id
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
-        //    }
-        //}
-
         [HttpPost]
-        public HttpResponseMessage AddCricketScore(delivery Score)
+        public HttpResponseMessage AddCricketScore(delivery Score, string image_path)
         {
             try
             {
                 if (Score == null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "Score cannot be null.");
                 }
 
+                // Create a new delivery object
                 var data = new delivery
                 {
                     fixture_id = Score.fixture_id,
@@ -103,11 +41,33 @@ namespace SportsManagementSystemBE.Controllers
                     dismissed_player_id = Score.dismissed_player_id,
                     fielder_id = Score.fielder_id,
                 };
-                
+
                 db.deliveries.Add(data);
                 db.SaveChanges();
-                return Request.CreateResponse(HttpStatusCode.OK,data.id);
+                var totalRunsScored = db.deliveries
+                  .Where(d => d.fixture_id == Score.fixture_id && d.team_id == Score.team_id)
+                   .Sum(d => d.runs_scored);
 
+                var totalExtraRuns = db.deliveries
+                    .Where(d => d.fixture_id == Score.fixture_id && d.team_id == Score.team_id)
+                    .Sum(d => d.extra_runs ?? 0);
+
+                var totalScore = totalRunsScored + totalExtraRuns; // Combine both sums
+
+
+                // Handle image if provided
+                if (!string.IsNullOrEmpty(image_path))
+                {
+                    var imagedata = new Delivery_Images
+                    {
+                        image_path = image_path,
+                        deliveries_id = data.id // Use the saved delivery ID
+                    };
+
+                    db.Delivery_Images.Add(imagedata);
+                    db.SaveChanges();
+                }
+                return Request.CreateResponse(HttpStatusCode.OK,totalScore);//s, "Cricket score added successfully."
             }
             catch (Exception ex)
             {
@@ -115,7 +75,74 @@ namespace SportsManagementSystemBE.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpGet]
+        public HttpResponseMessage GetMatchScorers(int fixtureid)
+        {
+            try
+            {
+                // sab sa phala mai na sara table join kia phir un ko group by mai kiaa taaka woh data mai get kar sakou
+                // phir into g mai store kia ar naya object bna ka key.g use kar ka get kar liaa
+                //my score aur wicket pa logic b lagai ka agar null hon ga tou data ka object nai bana ga
+                //key use hoti hai data get karna ka lia jo groupby ki waja sa save huaa haai.
+                var BatsmanData=
+                    (from d in db.deliveries
+                     join f in db.Fixtures on d.fixture_id equals f.id
+                     join p in db.Players on d.striker_id equals p.id
+                     join s in db.Students on p.reg_no equals s.reg_no
+                     join t in db.Teams on d.team_id equals t.id
+                     where f.id == fixtureid
+
+                     group d by new{ f.id,d.striker_id,d.team_id,teamname=t.name,p.reg_no,strikername=s.name } into g
+                      let myScore = g.Sum(s => s.runs_scored)
+                     where myScore > 0 && myScore != null
+                     select new { 
+                         //fixtureid=g.Key.id,
+                         teamid=g.Key.team_id,
+                         teamname =g.Key.teamname,
+                         //strikerid=g.Key.striker_id,
+                         strikername=g.Key.strikername,
+                         myScore=g.Sum(s=>s.runs_scored),
+                     } ).ToList();
+
+                var BowlerData =
+                    (from d in db.deliveries
+                     join p in db.Players on d.bowler_id equals p.id
+                     join s in db.Students on p.reg_no equals s.reg_no
+                     join f in db.Fixtures on d.fixture_id equals f.id
+                     //join t in db.Teams on d.team_id equals t.id// d.team_id
+                     join bowlerTeam in db.Teams on p.team_id equals bowlerTeam.id
+                     where f.id == fixtureid
+
+                     group d by new { f.id,bowlerTeamid=bowlerTeam.id, bowlerTeam.name,bowlername = s.name } into g // p.reg_no,
+                     let myWickets = g.Count(d => d.wicket_type == "Bold" ||
+                                  d.wicket_type == "Caught" ||
+                                  d.wicket_type == "Stumps" ||
+                                  d.wicket_type == "Hit Wicket")
+                     where myWickets > 0  // Exclude bowlers with 0 or null wickets
+                     select new
+                     {
+                         //fixtureid=g.Key.id,
+                         teamid =g.Key.bowlerTeamid,
+                         teamname = g.Key.name,
+                         //strikerid=g.Key.striker_id,
+                          bowlername = g.Key.bowlername,
+                          myWickets =myWickets
+                     }).ToList();
+                var result = new {
+                    BatsmanData = BatsmanData,
+                    BowlerData = BowlerData,
+                };
+                return Request.CreateResponse(HttpStatusCode.OK,result);//,result
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unexpected error occurred: " + ex.Message);
+            }
+
+        }
+
+
+            [HttpPost]
         public HttpResponseMessage UploadImage()
         {
             try
@@ -195,25 +222,22 @@ namespace SportsManagementSystemBE.Controllers
         //to Grant permossions to folder run it in command prompt as administrator .
 
         [HttpPost]
-        public HttpResponseMessage PostHighScorer(List<ScoreCard> cards)
+        public HttpResponseMessage PostHighScorer(ManOfTheMatch userdata)
         {
             try
             {
-                //if(cards == null || !cards.Any())
-                //{
-                //    return Request.CreateResponse(HttpStatusCode.NotFound);//, " Not Found Data"
-                //}
-                foreach (var card in cards)
+                if (userdata == null)
                 {
-                    var data = new ScoreCard { 
-                        fixture_id=card.fixture_id,
-                        team_id=card.team_id,
-                        player_id=card.player_id,
-                        score=card.score,
-                        ball_consumed=card.ball_consumed,
-                    };
-                    db.ScoreCards.Add(data);
+                    return Request.CreateResponse(HttpStatusCode.NotFound);//, " Not Found Data"
                 }
+                var data = new ManOfTheMatch
+                {
+                    fixture_id = userdata.fixture_id,
+                    player_id = userdata.player_id,
+                    image_path = userdata.image_path,
+                };
+
+                db.ManOfTheMatches.Add(data);
                 db.SaveChanges();
                 return Request.CreateResponse(HttpStatusCode.OK);
             }
@@ -229,32 +253,77 @@ namespace SportsManagementSystemBE.Controllers
         {
             try
             {
+                // Fetching data from the deliveries table (d)
+                // Joining Fixtures (f) to filter by a specific fixture (match)
+                // Joining Teams (t) to get team names
+                // Applying a filter to get only records for the given fixtureId
+                var result =
+                    (from d in db.deliveries
+                     join f in db.Fixtures on d.fixture_id equals f.id  // Match deliveries to their respective fixture
+                     join t in db.Teams on d.team_id equals t.id  // Match deliveries to their respective team
+                     where f.id == fixtureId  // Filter for the specific fixture (match)
+
+                     // Grouping deliveries by fixture_id, team_id, and team name
+                     group d by new { d.fixture_id, d.team_id, t.name } into g
+
+                     // Creating a new object to store results
+                     select new
+                     {
+                         fixtureid = g.FirstOrDefault().fixture_id, // Get fixture ID from the first delivery in the group
+                         teamid = g.FirstOrDefault().team_id, // Get team ID from the first delivery in the group
+                         teamname = g.FirstOrDefault().Team.name, // Get team name from the first delivery in the group
+                         runswithextras = g.Sum(s => s.runs_scored) + g.Sum(s => s.extra_runs), // Calculate total runs including extras
+                         totalwickets = g.Count(s => s.wicket_type == "Bold" || s.wicket_type == "catch_out" || s.wicket_type == "Stumps" || s.wicket_type == "runout" || s.wicket_type == "Hit Wicket")
+                     }).ToList(); // Convert result to a list
+
+                // Check if there are no records or less than two teams
+                if (result.Count == 0)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);//, "No records found for the given fixture."
+                }
+                else if (result.Count < 2)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);//, "Only one team has records for the given fixture."
+                }
+
+                var team1 = result[0];
+                var team2 = result[1];
+
+                // Check if either team has null runs (indicating no data)
+                if (team1.runswithextras == null || team2.runswithextras == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);//, "One or both teams have no runs data."
+                }
+
+                int? winner = 0;
+
+                if (team1.runswithextras > team2.runswithextras)
+                {
+                    winner = team1.teamid;
+                }
+                else if (team2.runswithextras > team1.runswithextras)
+                {
+                    winner = team2.teamid;
+                }
+                else if (team2.runswithextras == team1.runswithextras)
+                {
+                    return Request.CreateResponse(HttpStatusCode.Conflict);//, "The match ended in a tie."
+                }
+
                 var fixture = db.Fixtures.FirstOrDefault(f => f.id == fixtureId);
 
-                var team1Score = db.CricketScores.FirstOrDefault(s => s.fixture_id == fixtureId && s.team_id == fixture.team1_id);
-                var team2Score = db.CricketScores.FirstOrDefault(s => s.fixture_id == fixtureId && s.team_id == fixture.team2_id);
-
-                if (team1Score == null || team2Score == null)
+                if (fixture.winner_id != null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.NotFound);//, "Scores for one or both teams not found."
+                    return Request.CreateResponse(HttpStatusCode.BadRequest);//, "A winner has already been set for this fixture."
                 }
 
-                if (team1Score.score > team2Score.score)
+                if (winner != null)
                 {
-                    fixture.winner_id = fixture.team1_id;
-                }
-                else if (team2Score.score > team1Score.score)
-                {
-                    fixture.winner_id = fixture.team2_id;
-                }
-                else if(team2Score.score == team1Score.score)
-                {
-                    return Request.CreateResponse(HttpStatusCode.Conflict);//, "Score Are Level."
+                    fixture.winner_id = winner;
                 }
 
                 db.SaveChanges();
-
-                return Request.CreateResponse(HttpStatusCode.OK, "Winner ID updated successfully.");
+                return Request.CreateResponse(HttpStatusCode.OK); //, result
             }
             catch (Exception ex)
             {
@@ -460,7 +529,6 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unexpected error occurred: " + ex.Message);
             }
         }
-
 
     }
 }
