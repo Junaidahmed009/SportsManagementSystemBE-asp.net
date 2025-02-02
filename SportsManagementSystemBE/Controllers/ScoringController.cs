@@ -14,66 +14,7 @@ namespace SportsManagementSystemBE.Controllers
     public class ScoringController : ApiController
     {
         private SportsManagementSystemEntities db = new SportsManagementSystemEntities();
-        [HttpPost]
-        public HttpResponseMessage AddCricketScore(delivery Score, string image_path)
-        {
-            try
-            {
-                if (Score == null)
-                {
-                    return Request.CreateResponse(HttpStatusCode.NotFound, "Score cannot be null.");
-                }
-
-                // Create a new delivery object
-                var data = new delivery
-                {
-                    fixture_id = Score.fixture_id,
-                    team_id = Score.team_id,
-                    over_number = Score.over_number,
-                    ball_number = Score.ball_number,
-                    runs_scored = Score.runs_scored,
-                    striker_id = Score.striker_id,
-                    non_striker_id = Score.non_striker_id,
-                    bowler_id = Score.bowler_id,
-                    extras = Score.extras,
-                    extra_runs = Score.extra_runs,
-                    wicket_type = Score.wicket_type,
-                    dismissed_player_id = Score.dismissed_player_id,
-                    fielder_id = Score.fielder_id,
-                };
-
-                db.deliveries.Add(data);
-                db.SaveChanges();
-                var totalRunsScored = db.deliveries
-                  .Where(d => d.fixture_id == Score.fixture_id && d.team_id == Score.team_id)
-                   .Sum(d => d.runs_scored);
-
-                var totalExtraRuns = db.deliveries
-                    .Where(d => d.fixture_id == Score.fixture_id && d.team_id == Score.team_id)
-                    .Sum(d => d.extra_runs ?? 0);
-
-                var totalScore = totalRunsScored + totalExtraRuns; // Combine both sums
-
-
-                // Handle image if provided
-                if (!string.IsNullOrEmpty(image_path))
-                {
-                    var imagedata = new Delivery_Images
-                    {
-                        image_path = image_path,
-                        deliveries_id = data.id // Use the saved delivery ID
-                    };
-
-                    db.Delivery_Images.Add(imagedata);
-                    db.SaveChanges();
-                }
-                return Request.CreateResponse(HttpStatusCode.OK,totalScore);//s, "Cricket score added successfully."
-            }
-            catch (Exception ex)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
-            }
-        }
+      
 
         [HttpGet]
         public HttpResponseMessage GetMatchScorers(int fixtureid)
@@ -114,9 +55,9 @@ namespace SportsManagementSystemBE.Controllers
                      where f.id == fixtureid
 
                      group d by new { f.id,bowlerTeamid=bowlerTeam.id, bowlerTeam.name,bowlername = s.name } into g // p.reg_no,
-                     let myWickets = g.Count(d => d.wicket_type == "Bold" ||
+                     let myWickets = g.Count(d => d.wicket_type == "Bowled" ||
                                   d.wicket_type == "Caught" ||
-                                  d.wicket_type == "Stumps" ||
+                                  d.wicket_type == "Stumped" ||
                                   d.wicket_type == "Hit Wicket")
                      where myWickets > 0  // Exclude bowlers with 0 or null wickets
                      select new
@@ -221,115 +162,8 @@ namespace SportsManagementSystemBE.Controllers
         //icacls "C:\Users\junai\source\repos\SportsManagementSystemBE\SportsManagementSystemBE\Resources\uploads\CricketPics" /grant Everyone:(F) /T
         //to Grant permossions to folder run it in command prompt as administrator .
 
-        [HttpPost]
-        public HttpResponseMessage PostHighScorer(ManOfTheMatch userdata)
-        {
-            try
-            {
-                if (userdata == null)
-                {
-                    return Request.CreateResponse(HttpStatusCode.NotFound);//, " Not Found Data"
-                }
-                var data = new ManOfTheMatch
-                {
-                    fixture_id = userdata.fixture_id,
-                    player_id = userdata.player_id,
-                    image_path = userdata.image_path,
-                };
+        
 
-                db.ManOfTheMatches.Add(data);
-                db.SaveChanges();
-                return Request.CreateResponse(HttpStatusCode.OK);
-            }
-            catch (Exception ex)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
-            }
-
-        }
-
-        [HttpPut]
-        public HttpResponseMessage UpdateCricketWinner(int fixtureId)
-        {
-            try
-            {
-                // Fetching data from the deliveries table (d)
-                // Joining Fixtures (f) to filter by a specific fixture (match)
-                // Joining Teams (t) to get team names
-                // Applying a filter to get only records for the given fixtureId
-                var result =
-                    (from d in db.deliveries
-                     join f in db.Fixtures on d.fixture_id equals f.id  // Match deliveries to their respective fixture
-                     join t in db.Teams on d.team_id equals t.id  // Match deliveries to their respective team
-                     where f.id == fixtureId  // Filter for the specific fixture (match)
-
-                     // Grouping deliveries by fixture_id, team_id, and team name
-                     group d by new { d.fixture_id, d.team_id, t.name } into g
-
-                     // Creating a new object to store results
-                     select new
-                     {
-                         fixtureid = g.FirstOrDefault().fixture_id, // Get fixture ID from the first delivery in the group
-                         teamid = g.FirstOrDefault().team_id, // Get team ID from the first delivery in the group
-                         teamname = g.FirstOrDefault().Team.name, // Get team name from the first delivery in the group
-                         runswithextras = g.Sum(s => s.runs_scored) + g.Sum(s => s.extra_runs), // Calculate total runs including extras
-                         totalwickets = g.Count(s => s.wicket_type == "Bold" || s.wicket_type == "catch_out" || s.wicket_type == "Stumps" || s.wicket_type == "runout" || s.wicket_type == "Hit Wicket")
-                     }).ToList(); // Convert result to a list
-
-                // Check if there are no records or less than two teams
-                if (result.Count == 0)
-                {
-                    return Request.CreateResponse(HttpStatusCode.NotFound);//, "No records found for the given fixture."
-                }
-                else if (result.Count < 2)
-                {
-                    return Request.CreateResponse(HttpStatusCode.NotFound);//, "Only one team has records for the given fixture."
-                }
-
-                var team1 = result[0];
-                var team2 = result[1];
-
-                // Check if either team has null runs (indicating no data)
-                if (team1.runswithextras == null || team2.runswithextras == null)
-                {
-                    return Request.CreateResponse(HttpStatusCode.NotFound);//, "One or both teams have no runs data."
-                }
-
-                int? winner = 0;
-
-                if (team1.runswithextras > team2.runswithextras)
-                {
-                    winner = team1.teamid;
-                }
-                else if (team2.runswithextras > team1.runswithextras)
-                {
-                    winner = team2.teamid;
-                }
-                else if (team2.runswithextras == team1.runswithextras)
-                {
-                    return Request.CreateResponse(HttpStatusCode.Conflict);//, "The match ended in a tie."
-                }
-
-                var fixture = db.Fixtures.FirstOrDefault(f => f.id == fixtureId);
-
-                if (fixture.winner_id != null)
-                {
-                    return Request.CreateResponse(HttpStatusCode.BadRequest);//, "A winner has already been set for this fixture."
-                }
-
-                if (winner != null)
-                {
-                    fixture.winner_id = winner;
-                }
-
-                db.SaveChanges();
-                return Request.CreateResponse(HttpStatusCode.OK); //, result
-            }
-            catch (Exception ex)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unexpected error occurred: " + ex.Message);
-            }
-        }
 
         [HttpGet]
         public HttpResponseMessage MatchScores(int matchId)

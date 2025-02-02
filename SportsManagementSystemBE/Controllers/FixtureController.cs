@@ -51,14 +51,16 @@ namespace SportsManagementSystemBE.Controllers
         }
         //this function is used to get fixtures and display for users and scoring.
         [HttpGet]
-        public HttpResponseMessage GetUsersFixtures(int sportsId)
+        public HttpResponseMessage GetUsersFixtures(int sportsId,int sessionid)
         {
             try
             {
                 //var latestsesion = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
-                //var user = db.SessionSports.FirstOrDefault(s => s.managed_by == userid && s.session_id == latestsesion.id);
-                var sport = db.Sports.FirstOrDefault(s => s.id == sportsId);
-                // Query for the relevant fixtures based on the sport name
+                var sessionSportid = db.SessionSports.FirstOrDefault(s => s.sports_id == sportsId && s.session_id == sessionid);
+                if(sessionSportid == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.Conflict);
+                }
                 var fixturesQuery =
                 from f in db.Fixtures
                 join t1 in db.Teams on f.team1_id equals t1.id into t1Teams
@@ -69,7 +71,10 @@ namespace SportsManagementSystemBE.Controllers
                 from w in winnerTeams.DefaultIfEmpty()
                 join ss in db.SessionSports on f.sessionSports_id equals ss.id
                 join s in db.Sports on ss.sports_id equals s.id
-                where s.id == sport.id
+                where f.sessionSports_id == sessionSportid.id
+                
+                
+                //where f
                 select new
                 {
                     fixture_id = f.id,
