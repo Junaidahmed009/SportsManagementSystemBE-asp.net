@@ -1,4 +1,5 @@
-﻿using SportsManagementSystemBE.Models;
+﻿using SportsManagementSystemBE.DTOs;
+using SportsManagementSystemBE.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -294,7 +295,7 @@ namespace SportsManagementSystemBE.Controllers
                                            teamid = grouped.Key.team_id,
                                            teamName = grouped.Key.name,
                                            striker_id = grouped.Key.striker_id,
-                                           Batsman = grouped.Key.name,
+                                           Batsman = grouped.Key.studentname,
                                            runs = grouped.Sum(d => d.runs_scored)
                                        }).ToList();
                 var fixture = db.Fixtures.FirstOrDefault(d => d.id ==Fixid);
@@ -317,7 +318,7 @@ namespace SportsManagementSystemBE.Controllers
                                              id = grouped.Key.id,
                                              teamid = grouped.Key.team_id,
                                              teamName = grouped.Key.name,
-                                             runs = grouped.Sum(d => d.runs_scored + d.extra_runs)
+                                             run = grouped.Sum(s => s.runs_scored) + (grouped.Sum(s => s.extra_runs) ?? 0)
                                          }).ToList();
 
                 var team1Runs = TeamRunswithExtra.Where(score => score.teamid == fixture.team1_id).ToList();
@@ -336,7 +337,7 @@ namespace SportsManagementSystemBE.Controllers
                 {
                     PlayersScore = EachTeamIndividualScore,
                     RunwithExtra = EachTeamScore,
-                    //bowlingStats = bowlingStatsResult,
+                    bowlingStats = bowlingStatsResult,
                 };
 
                 return Request.CreateResponse(HttpStatusCode.OK, results);
@@ -359,18 +360,22 @@ namespace SportsManagementSystemBE.Controllers
                     join p in db.Players on d.bowler_id equals p.id // Get bowler's team
                     group d by new { d.fixture_id, p.team_id, d.bowler_id } into grouped
                     let validDeliveries = grouped.Count(d =>
-                        d.extras != "Wide" && d.extras != "No Ball") // Case-sensitive check
+                        d.extras != "Wide" && d.extras != "No Ball")
+                    let extraDeliveries = grouped.Count(d =>
+                        d.extras == "Wide" || d.extras == "No Ball")
                     select new
                     {
                         fixture_id = grouped.Key.fixture_id,
                         team_id = grouped.Key.team_id,
                         bowler_id = grouped.Key.bowler_id,
-                        runsConceeded = grouped.Sum(d => d.runs_scored + d.extra_runs),
+                        runsConceeded = grouped.Sum(s => s.runs_scored) + (grouped.Sum(s => s.extra_runs) ?? 0),
                         validDeliveries = validDeliveries, // Store for later formatting
+                        extradelivery=extraDeliveries,
                         wickets_taken = grouped.Count(d =>
                             d.wicket_type == "Bowled" ||
                             d.wicket_type == "Caught" ||
-                            d.wicket_type == "Stumped")
+                            d.wicket_type == "Stumped" ||
+                            d.wicket_type == "Hit Wicket")
                     }).ToList(); // Materialize here to switch to LINQ-to-Objects
 
                 // Step 2: Format overs as a string in memory (after ToList)
@@ -378,6 +383,7 @@ namespace SportsManagementSystemBE.Controllers
                 {
                     int completedOvers = bs.validDeliveries / 6;
                     int balls = bs.validDeliveries % 6;
+                    int extras = bs.extradelivery;
                     string overs = balls == 0
                         ? $"{completedOvers}"
                         : $"{completedOvers}.{balls}";
@@ -389,7 +395,9 @@ namespace SportsManagementSystemBE.Controllers
                         bs.bowler_id,
                         bs.runsConceeded,
                         overs,
-                        bs.wickets_taken
+                        bs.wickets_taken,
+                        bs.extradelivery,
+                        
                     };
                 }).ToList();
 
@@ -417,7 +425,8 @@ namespace SportsManagementSystemBE.Controllers
                                   player_name = bi.player_name,
                                   runs_conceeded = bs.runsConceeded,
                                   overs = bs.overs,
-                                  wickets_taken = bs.wickets_taken
+                                  wickets_taken = bs.wickets_taken,
+                                  Extras=bs.extradelivery,
                               }).ToList();
                 var fixture = db.Fixtures.FirstOrDefault(d => d.id == fixtureId);
                 var team1 = result.Where(score => score.team_id == fixture.team1_id).ToList();
@@ -439,5 +448,106 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
+
+        [HttpGet]
+        public HttpResponseMessage ballByballData(int specificFixtureId)
+        {
+            try
+            {
+                var fixtureData = db.Fixtures
+                    .Where(f => f.id == specificFixtureId)
+                    .Select(f => new
+                    {
+                        Team1Id = f.team1_id,
+                        Team2Id = f.team2_id
+                    }).FirstOrDefault();
+
+                if (fixtureData == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "No fixtures found");
+                }
+
+                var allDeliveries = db.deliveries
+                    .Where(d => d.fixture_id == specificFixtureId)
+                    .OrderBy(d => d.over_number)
+                    .ThenBy(d => d.ball_number)
+                    .AsEnumerable()
+                    .Select(d => new
+                    {
+                        Delivery = d,
+                        Striker = db.Players.Where(p => p.id == d.striker_id)
+                                    .Join(db.Students, p => p.reg_no, s => s.reg_no, (p, s) => s.name)
+                                    .FirstOrDefault(),
+                        NonStriker = db.Players.Where(p => p.id == d.non_striker_id)
+                                    .Join(db.Students, p => p.reg_no, s => s.reg_no, (p, s) => s.name)
+                                    .FirstOrDefault(),
+                        Bowler = db.Players.Where(p => p.id == d.bowler_id)
+                                    .Join(db.Students, p => p.reg_no, s => s.reg_no, (p, s) => s.name)
+                                    .FirstOrDefault(),
+                        DismissedPlayer = db.Players.Where(p => p.id == d.dismissed_player_id)
+                                    .Join(db.Students, p => p.reg_no, s => s.reg_no, (p, s) => s.name)
+                                    .FirstOrDefault(),
+                        Fielder = db.Players.Where(p => p.id == d.fielder_id)
+                                    .Join(db.Students, p => p.reg_no, s => s.reg_no, (p, s) => s.name)
+                                    .FirstOrDefault()
+                    })
+                    .Select(x => new BallByBallDto
+                    {
+                        Over = x.Delivery.over_number ??0,
+                        Ball = x.Delivery.ball_number ??0,
+                        Striker = x.Striker ?? "Unknown",
+                        NonStriker = x.NonStriker ?? "Unknown",
+                        Bowler = x.Bowler ?? "Unknown",
+                        BatsmanRuns = x.Delivery.runs_scored ??0,
+                        ExtraRuns = x.Delivery.extra_runs ??0,
+                        ExtraType = x.Delivery.extras ?? "None",
+                        IsWicket = !string.IsNullOrEmpty(x.Delivery.wicket_type),
+                        WicketType = x.Delivery.wicket_type ?? "None",
+                        DismissedPlayer = x.DismissedPlayer ?? "None",
+                        Fielder = x.Fielder ?? "None",
+                        TeamId = x.Delivery.team_id ??0
+                    }).ToList();
+                var team1data = allDeliveries
+                    .Where(d => d.TeamId == fixtureData.Team1Id)
+                    .ToList();
+
+                var team2data = allDeliveries
+                    .Where(d => d.TeamId == fixtureData.Team2Id)
+                    .ToList();
+                var team1name = db.Teams
+                   .Where(t => t.id == fixtureData.Team1Id).
+                   Select(t => t.name)
+                   .FirstOrDefault();
+
+                var team2name = db.Teams
+                  .Where(t => t.id == fixtureData.Team2Id).
+                  Select(t => t.name)
+                  .FirstOrDefault();
+
+                var result = new
+                {
+                    team1 = team1data,
+                    team2 = team2data,
+                    team1name=team1name,
+                    team2name=team2name
+                };
+
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
+        //[HttpGet]
+        //public HttpResponseMessage GetImagePath(ConsoleKeyInfo fixid)
+        //{
+        //    try
+        //    {
+
+        //    }
+        //    catch (Exception ex) { }
+        //}
     }
 }
