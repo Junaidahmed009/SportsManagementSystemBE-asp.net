@@ -540,14 +540,65 @@ namespace SportsManagementSystemBE.Controllers
             }
         }
 
-        //[HttpGet]
-        //public HttpResponseMessage GetImagePath(ConsoleKeyInfo fixid)
-        //{
-        //    try
-        //    {
+        [HttpGet]
+        public HttpResponseMessage GetImagePath(int fixid)
+        {
+            try
+            {
+                if (fixid < 0)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                }
+                var MOMimagepath = db.ManOfTheMatches.
+                    Where(m => m.fixture_id == fixid)
+                    .Select(m => m.image_path)
+                    .FirstOrDefault();
 
-        //    }
-        //    catch (Exception ex) { }
-        //}
+                var Deliveryimages =
+                   (from d in db.deliveries
+                    join dm in db.Delivery_Images on d.id equals dm.deliveries_id
+                    where d.fixture_id == fixid
+                    group d by new { dm.image_path, dm.deliveries_id, d.runs_scored, d.wicket_type } into grouped
+                    select new
+                    {
+                        imagepath = grouped.Key.image_path,
+                        deliveriesid = grouped.Key.deliveries_id,
+                        socre = grouped.Key.runs_scored.ToString(),
+                        wicket = grouped.Key.wicket_type
+                    }).ToList();
+
+                var playerDetails =
+                    (from p in db.Players
+                     join mm in db.ManOfTheMatches on p.id equals mm.player_id
+                     join s in db.Students on p.reg_no equals s.reg_no
+                     join d in db.deliveries on mm.fixture_id equals d.fixture_id 
+                     where mm.fixture_id == fixid
+                     group new {p, d} by new { p.reg_no, studentregno = s.reg_no, s.name, s.section, s.semNo, s.discipline} into grouped
+                     select new
+                     {
+                         studentreg = grouped.Key.studentregno,
+                         name = grouped.Key.name,
+                         section = grouped.Key.section,
+                         semno = grouped.Key.semNo,
+                         discipline = grouped.Key.discipline,
+                         runsscored = grouped.Where(g=>g.d.striker_id==g.p.id).Sum(g => g.d.runs_scored),
+                         wickets_taken = grouped.Count(g =>g.d.bowler_id==g.p.id &&
+                          ( g.d.wicket_type == "Bowled" ||
+                           g.d.wicket_type == "Caught" ||
+                           g.d.wicket_type == "Stumped" ||
+                           g.d.wicket_type == "Hit Wicket"))
+                     }).ToList();
+                if (playerDetails == null || Deliveryimages == null || MOMimagepath ==null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                }
+                var data = new { MOMimagepath,playerDetails,Deliveryimages };
+
+                return Request.CreateResponse(HttpStatusCode.OK,data);
+            }
+            catch (Exception ex) {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
     }
 }

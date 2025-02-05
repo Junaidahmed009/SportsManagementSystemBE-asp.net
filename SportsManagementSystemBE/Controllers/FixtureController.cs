@@ -363,5 +363,104 @@ namespace SportsManagementSystemBE.Controllers
             }
         }
 
+        [HttpPut]
+        public HttpResponseMessage AutoupdateFixtures(int userid)
+        {
+            try
+            {
+                if (userid < 0)
+                {
+                    return Request.CreateResponse(HttpStatusCode.Conflict);
+                }
+
+                // Get the latest session and session sport managed by the user
+                var latestSession = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
+                if (latestSession == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "No session found.");
+                }
+
+                var sessionSport = db.SessionSports
+                                     .FirstOrDefault(s => s.session_id == latestSession.id && s.managed_by == userid);
+                if (sessionSport == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "No session sport found for the given user.");
+                }
+
+                // Define the rounds in descending order (from Final to League Match)
+                var rounds = new[]
+                {
+            new { RoundName = "Final", ExpectedCount = 1, NextRound = "", NextRoundMatches = 0 },
+            new { RoundName = "Semi Final", ExpectedCount = 2, NextRound = "Final", NextRoundMatches = 1 },
+            new { RoundName = "Quarter Final", ExpectedCount = 4, NextRound = "Semi Final", NextRoundMatches = 2 },
+            new { RoundName = "League Match 2", ExpectedCount = 8, NextRound = "Quarter Final", NextRoundMatches = 4 },
+            new { RoundName = "League Match", ExpectedCount = 16, NextRound = "League Match 2", NextRoundMatches = 8 }
+        };
+
+                List<int?> winnerTeams = null;
+
+                foreach (var round in rounds)
+                {
+                    // Get fixtures of the current round
+                    var fixtures = db.Fixtures
+                                     .Where(f => f.sessionSports_id == sessionSport.id && f.match_type == round.RoundName)
+                                     .ToList();
+
+                    // Ensure the expected number of matches exist
+                    if (fixtures.Count == round.ExpectedCount && fixtures.All(f => f.winner_id != null))
+                    {
+                        // Collect winner teams from this round
+                        winnerTeams = fixtures.Select(f => f.winner_id).ToList();
+
+                        // Check if there is a next round
+                        if (!string.IsNullOrEmpty(round.NextRound))
+                        {
+                            // Get the fixtures of the next round
+                            var nextRoundFixtures = db.Fixtures
+                                                      .Where(f => f.sessionSports_id == sessionSport.id && f.match_type == round.NextRound)
+                                                      .OrderBy(f => f.id)
+                                                      .ToList();
+
+                            // Ensure there are enough winners to form pairs for the next round
+                            if (winnerTeams.Count >= round.NextRoundMatches * 2)
+                            {
+                                if (nextRoundFixtures.Count == round.NextRoundMatches)
+                                {
+                                    for (int i = 0; i < round.NextRoundMatches; i++)
+                                    {
+                                        nextRoundFixtures[i].team1_id = winnerTeams[i * 2];
+                                        nextRoundFixtures[i].team2_id = winnerTeams[i * 2 + 1];
+                                    }
+
+                                    // Save updates to the database
+                                    db.SaveChanges();
+                                }
+                            }
+                            else
+                            {
+                                return Request.CreateResponse(HttpStatusCode.BadRequest, $"Not enough winner teams to populate {round.NextRound} fixtures.");
+                            }
+                        }
+
+                        break; // Stop checking further rounds once a completed round is found
+                    }
+                }
+
+                if (winnerTeams == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
+
+
+
     }
 }

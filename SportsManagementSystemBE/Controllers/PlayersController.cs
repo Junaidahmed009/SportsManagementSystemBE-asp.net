@@ -116,8 +116,82 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
+        
 
+        [HttpGet]
+        public HttpResponseMessage GetTeams(int userid)
+        {
+            try
+            {
+                if (userid == 0)
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid user ID.");
+                }
+                var regno = db.Users.FirstOrDefault(u => u.id == userid);
+                // Get the latest session
+                var latestSession = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
+                if (latestSession == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "No sessions found.");
+                }
 
+                // Get all teams the user is part of
+                var userTeams = db.Players
+                    .Where(p => p.reg_no == regno.registration_no)
+                    .Select(p => p.team_id)
+                    .ToList();
+
+                if (!userTeams.Any())
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "User is not part of any team.");
+                }
+
+                // Get fixtures for the user's teams
+                var userFixtures = (
+                    from f in db.Fixtures
+                    join t1 in db.Teams on f.team1_id equals t1.id
+                    join t2 in db.Teams on f.team2_id equals t2.id
+                    join ss1 in db.SessionSports on t1.sports_id equals ss1.sports_id
+                    join s1 in db.Sports on ss1.sports_id equals s1.id
+                    join ss2 in db.SessionSports on t1.sports_id equals ss2.sports_id
+                    join s2 in db.Sports on ss2.sports_id equals s2.id
+                    join ss in db.SessionSports on latestSession.id equals ss.id
+                    //join s in db.Sports on ss.sports_id equals s.id
+                    where userTeams.Contains(t1.id) || userTeams.Contains(t2.id) // Check if the fixture involves any of the user's teams
+                    select new
+                    {
+                        team1name = t1.name,
+                        team2name = t2.name,
+                        matchdate = f.matchDate,
+                        venue = f.venue,
+                        sportname = userTeams.Contains(t1.id) ? s1.games :s2.games,
+                       //teamstatus=t1.teamStatus
+                    }).ToList();
+
+                // Get all teams the user is part of, even if they don't have fixtures
+                var allUserTeams = (
+                    from t in db.Teams
+                    where userTeams.Contains(t.id)
+                    select new
+                    {
+                        teamname = t.name,
+                        hasFixtures = db.Fixtures.Any(f => f.team1_id == t.id || f.team2_id == t.id) // Check if the team has any fixtures
+                    }).ToList();
+
+                // Combine results
+                var result = new
+                {
+                    Fixtures = userFixtures,
+                    Teams = allUserTeams
+                };
+
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
 
     }
 }
