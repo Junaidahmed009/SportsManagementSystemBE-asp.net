@@ -162,40 +162,70 @@ namespace SportsManagementSystemBE.Controllers
         //icacls "C:\Users\junai\source\repos\SportsManagementSystemBE\SportsManagementSystemBE\Resources\uploads\CricketPics" /grant Everyone:(F) /T
         //to Grant permossions to folder run it in command prompt as administrator .
 
-        
+        [HttpGet]
+
+        public HttpResponseMessage GetfootballScore(int Fixid)
+        {
+            try
+            {
+                if (Fixid == 0)
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest);
+                }
+                var data = db.GoalBaseScores.
+                     Where(g => g.fixture_id == Fixid).
+                     Select(g => new { g.team_id, g.goals }).
+                     ToList();
+                if (!data.Any())
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                }
+                return Request.CreateResponse(HttpStatusCode.OK, data);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, "An error occurred: " + ex.Message);
+            }
+        }
+
 
 
         [HttpGet]
-        public HttpResponseMessage MatchScores(int matchId)
+        public HttpResponseMessage MatchScores(int fixtureid)
         {
             try
             {
                 // Fetch the fixture details by matchId
-                var fixture = db.Fixtures.FirstOrDefault(m => m.id == matchId);
+                var fixture = db.Fixtures.FirstOrDefault(m => m.id == fixtureid);
 
                 if (fixture != null)
                 {
                     var team1 = db.Teams.FirstOrDefault(t => t.id == fixture.team1_id);
                     var team2 = db.Teams.FirstOrDefault(t => t.id == fixture.team2_id);
+                    //var comments = db.Comments.FirstOrDefault(c => c.fixture_id == fixtureid);
 
-                    // Initialize a list to hold all match details and scores
-                    var matchDetails = new List<object>();
-
-                    // Add fixture details as the first item
-                    matchDetails.Add(new
+                    // Initialize a response object to hold the match details
+                    var matchDetails = new
                     {
-                        FixtureId = fixture.id,
-                        Team1Id = fixture.team1_id,
-                        Team2Id = fixture.team2_id,
-                        MatchDate = fixture.matchDate,
-                        Venue = fixture.venue,
-                        Team1Name = team1 != null ? team1.name : "Team 1 not found",
-                        Team2Name = team2 != null ? team2.name : "Team 2 not found",
-                    });
+                        Fixture = new
+                        {
+                            fixture.id,
+                            fixture.team1_id,
+                            fixture.team2_id,
+                            fixture.matchDate,
+                            fixture.venue,
+                            winner = fixture.winner_id,
+                            // Add team names to the response object
+                            Team1Name = team1 != null ? team1.name : "Team 1 not found",
+                            Team2Name = team2 != null ? team2.name : "Team 2 not found",
+                            //Comments = comments != null ? comments.comments : "No commentary"
+                        },
+                        ScoreDetails = new List<object>()
+                    };
 
-                    // Goal-Based Scoring
+                    // Check if there's goal-based scoring data for this fixture (e.g., football, soccer)
                     var goalScore = db.GoalBaseScores
-                                      .Where(g => g.fixture_id == matchId)
+                                      .Where(g => g.fixture_id == fixtureid)
                                       .Select(g => new
                                       {
                                           TeamId = g.team_id,
@@ -204,36 +234,36 @@ namespace SportsManagementSystemBE.Controllers
 
                     if (goalScore.Any())
                     {
-                        matchDetails.Add(new
+                        matchDetails.ScoreDetails.Add(new
                         {
                             Type = "Goal-Based Scoring",
                             Score = goalScore
                         });
                     }
 
-                    // Cricket Scoring
-                    var cricketScore = db.CricketScores
-                                         .Where(c => c.fixture_id == matchId)
-                                         .Select(c => new
-                                         {
-                                             TeamId = c.team_id,
-                                             c.score,
-                                             c.overs,
-                                             c.wickets
-                                         }).ToList();
+                    //// Check if there's cricket scoring data for this fixture (e.g., cricket)
+                    //var cricketScore = db.CricketScores
+                    //                     .Where(c => c.fixture_id == fixtureid)
+                    //                     .Select(c => new
+                    //                     {
+                    //                         TeamId = c.team_id,
+                    //                         c.score,
+                    //                         c.overs,
+                    //                         c.wickets
+                    //                     }).ToList();
 
-                    if (cricketScore.Any())
-                    {
-                        matchDetails.Add(new
-                        {
-                            Type = "Cricket Scoring",
-                            Score = cricketScore
-                        });
-                    }
+                    //if (cricketScore.Any())
+                    //{
+                    //    matchDetails.ScoreDetails.Add(new
+                    //    {
+                    //        Type = "Cricket Scoring",
+                    //        Score = cricketScore
+                    //    });
+                    //}
 
-                    // Point-Based Scoring
+                    // Check if there's point-based scoring data for this fixture (e.g., tennis, volleyball)
                     var pointScore = db.PointsBaseScores
-                                       .Where(p => p.fixture_id == matchId)
+                                       .Where(p => p.fixture_id == fixtureid)
                                        .Select(p => new
                                        {
                                            TeamId = p.team_id,
@@ -242,33 +272,38 @@ namespace SportsManagementSystemBE.Controllers
 
                     if (pointScore.Any())
                     {
-                        matchDetails.Add(new
+                        matchDetails.ScoreDetails.Add(new
                         {
                             Type = "Point-Based Scoring",
                             Score = pointScore
                         });
                     }
+                    var TurnScore = db.TurnBaseGames
+                                       .Where(p => p.fixture_id == fixtureid)
+                                       .Select(p => new
+                                       {
+                                           //WinnerId = p.winner_id,
+                                           LoserId = p.loser_id,
+                                       }).ToList();
 
-                    // Turn-Based Scoring
-                    var turnScore = db.TurnBaseGames
-                                      .Where(t => t.fixture_id == matchId)
-                                      .Select(t => new
-                                      {
-                                          WinnerId = t.winnner_id,
-                                          LoserId = t.loser_id,
-                                      }).ToList();
-
-                    if (turnScore.Any())
+                    if (TurnScore.Any())
                     {
-                        matchDetails.Add(new
+                        matchDetails.ScoreDetails.Add(new
                         {
                             Type = "Turn-Based Scoring",
-                            Score = turnScore
+                            Score = pointScore
                         });
                     }
 
-                    // Return the match details and scores
-                    return Request.CreateResponse(HttpStatusCode.OK, matchDetails);
+                    // Return the match details along with the score details
+                    if (matchDetails.ScoreDetails.Any())
+                    {
+                        return Request.CreateResponse(HttpStatusCode.OK, matchDetails);
+                    }
+                    else
+                    {
+                        return Request.CreateResponse(HttpStatusCode.NotFound, "No scores available for this match.");
+                    }
                 }
                 else
                 {

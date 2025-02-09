@@ -119,15 +119,20 @@ namespace SportsManagementSystemBE.Controllers
         
 
         [HttpGet]
-        public HttpResponseMessage GetTeams(int userid)
+        public HttpResponseMessage GetUserTeams(string regno)
         {
             try
             {
-                if (userid == 0)
+                if (regno == null)
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid user ID.");
                 }
-                var regno = db.Users.FirstOrDefault(u => u.id == userid);
+                var Studentregno = db.Students.FirstOrDefault(s=>s.reg_no == regno );
+                if (Studentregno == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest);//, "Reg-no not found in student table "
+                }
+
                 // Get the latest session
                 var latestSession = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
                 if (latestSession == null)
@@ -137,13 +142,13 @@ namespace SportsManagementSystemBE.Controllers
 
                 // Get all teams the user is part of
                 var userTeams = db.Players
-                    .Where(p => p.reg_no == regno.registration_no)
+                    .Where(p => p.reg_no == regno)
                     .Select(p => p.team_id)
                     .ToList();
 
                 if (!userTeams.Any())
                 {
-                    return Request.CreateResponse(HttpStatusCode.NotFound, "User is not part of any team.");
+                    return Request.CreateResponse(HttpStatusCode.NotFound);//, "User is not part of any team."
                 }
 
                 // Get fixtures for the user's teams
@@ -160,12 +165,17 @@ namespace SportsManagementSystemBE.Controllers
                     where userTeams.Contains(t1.id) || userTeams.Contains(t2.id) // Check if the fixture involves any of the user's teams
                     select new
                     {
+                        fixtureid= f.id,
+                        team1id= t1.id,
+                        team2id= t2.id,
                         team1name = t1.name,
                         team2name = t2.name,
                         matchdate = f.matchDate,
                         venue = f.venue,
-                        sportname = userTeams.Contains(t1.id) ? s1.games :s2.games,
-                       //teamstatus=t1.teamStatus
+                        sportname = userTeams.Contains(t1.id) ? s1.games : s2.games,
+                        winnerteam = f.winner_id == null ? "NotDecided" : db.Teams.Where(t => t.id == f.winner_id)
+                        .Select(t => t.name).FirstOrDefault()
+                        //teamstatus=t1.teamStatus
                     }).ToList();
 
                 // Get all teams the user is part of, even if they don't have fixtures
@@ -177,12 +187,16 @@ namespace SportsManagementSystemBE.Controllers
                         teamname = t.name,
                         hasFixtures = db.Fixtures.Any(f => f.team1_id == t.id || f.team2_id == t.id) // Check if the team has any fixtures
                     }).ToList();
+                var studentdata = db.Students.
+                     Where(s => s.reg_no == regno).
+                     Select(s => new {s.name,s.reg_no,s.discipline,s.section,s.semNo});
 
                 // Combine results
                 var result = new
                 {
                     Fixtures = userFixtures,
-                    Teams = allUserTeams
+                    Teams = allUserTeams,
+                    userData= studentdata
                 };
 
                 return Request.CreateResponse(HttpStatusCode.OK, result);
