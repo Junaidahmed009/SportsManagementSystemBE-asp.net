@@ -207,5 +207,182 @@ namespace SportsManagementSystemBE.Controllers
             }
         }
 
+        [HttpGet]
+        public HttpResponseMessage GetplayerPerformancebysession(string regNo, int sessionId)
+        {
+            try
+            {
+
+
+                var players = db.Players
+                                .Where(p => p.reg_no == regNo)
+                                .Select(p => new { p.id, p.team_id })
+                                .ToList();
+
+                if (!players.Any())
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Player not found.");
+                }
+
+                var playerTeamIds = players.Select(p => p.team_id).ToList();
+                var playerIds = players.Select(p => p.id).ToList();
+
+                var userFixtures = (
+                    from f in db.Fixtures
+                    join ss in db.SessionSports on f.sessionSports_id equals ss.id
+                    where ss.session_id == sessionId &&
+                          (playerTeamIds.Contains(f.team1_id ?? 0) || playerTeamIds.Contains(f.team2_id ?? 0))
+                    select new { f.id }
+                ).ToList();
+
+                var fixtureIds = userFixtures.Select(f => f.id).ToList();
+
+                var cricketStats = db.deliveries
+                    .Where(d => fixtureIds.Contains(d.fixture_id ?? 0) &&
+                               (playerIds.Contains(d.striker_id ?? 0) || playerIds.Contains(d.bowler_id ?? 0)))
+                    .GroupBy(d => d.fixture_id)
+                    .Select(g => new
+                    {
+                        Fixtureid = g.Key,
+                        totalRuns = g.Sum(d => (d.striker_id.HasValue && playerIds.Contains(d.striker_id.Value)) ? (d.runs_scored ?? 0) : 0),
+                        totalWickets = g.Count(d => d.bowler_id.HasValue && playerIds.Contains(d.bowler_id.Value) &&
+                                                   d.wicket_type != null &&
+                                                   (d.wicket_type == "Bowled" || d.wicket_type == "Stumped" ||
+                                                    d.wicket_type == "Hit Wicket" || d.wicket_type == "Caught"))
+                    })
+                    .ToList();
+                var FootballStats = db.Match_events
+                    .Where(m => fixtureIds.Contains(m.fixture_id ?? 0) &&
+                               (playerIds.Contains(m.player_id ?? 0)))
+                    .GroupBy(m => m.fixture_id)
+                    .Select(g => new
+                    {
+                        Fixtureid = g.Key,
+                        totalgoals = g.Count(m => m.player_id.HasValue && playerIds.Contains(m.player_id.Value) && m.event_type=="Goal")
+                    })
+                    .ToList();
+                 var totalCricketMatches = cricketStats.Count;   // Count unique fixture IDs in Cricket
+                var totalFootballMatches = FootballStats.Count; // Count unique fixture IDs in Football
+                var totalruns=cricketStats.Sum(d => d.totalRuns);
+                var totalwickets=cricketStats.Sum (d => d.totalWickets);
+                var FootballStat = FootballStats.Sum(m => m.totalgoals);
+
+                var totaldata = new
+                {
+                    Crickettotalruns = totalruns,
+                    Crickettotalwickets = totalwickets,
+                    totalCricketMatches = totalCricketMatches,
+                    totalFootballMatches = totalFootballMatches,
+                    FootballGoals= FootballStat,
+                    //cricketStats = cricketStats
+                };
+
+                return Request.CreateResponse(HttpStatusCode.OK, totaldata);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+    }
+
+        [HttpGet]
+        public HttpResponseMessage Getplayerrunsbybymatches(string regNo, int sessionId)
+        {
+            try
+            {
+                var players = db.Players
+                                .Where(p => p.reg_no == regNo)
+                                .Select(p => new { p.id, p.team_id })
+                                .ToList();
+
+                if (!players.Any())
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Player not found.");
+                }
+
+                var playerTeamIds = players.Select(p => p.team_id).ToList();
+                var playerIds = players.Select(p => p.id).ToList();
+
+                // Fetch Fixtures & Sports Data Correctly
+                var userFixtures = db.Fixtures
+                    .Where(f => db.SessionSports.Any(ss => ss.id == f.sessionSports_id && ss.session_id == sessionId) &&
+                                (playerTeamIds.Contains(f.team1_id ?? 0) || playerTeamIds.Contains(f.team2_id ?? 0)))
+                    .Select(f => new
+                    {
+                        f.id,
+                        Team1Name = db.Teams.Where(t => t.id == f.team1_id).Select(t => t.name).FirstOrDefault() ?? "Unknown",
+                        Team2Name = db.Teams.Where(t => t.id == f.team2_id).Select(t => t.name).FirstOrDefault() ?? "Unknown",
+                        SportId = db.SessionSports.Where(ss => ss.id == f.sessionSports_id)
+                                                   .Select(ss => ss.sports_id)
+                                                   .FirstOrDefault()
+                    })
+                    .ToList()  // ✅ Fetch fixtures first
+                    .Select(f => new  // ✅ Now safely fetch SportName
+                    {
+                        f.id,
+                        f.Team1Name,
+                        f.Team2Name,
+                        f.SportId,
+                        SportName = db.Sports.Where(s => s.id == f.SportId)
+                                             .Select(s => s.games)
+                                             .FirstOrDefault() ?? "Unknown"
+                    })
+                    .ToList();
+
+                var fixtureIds = userFixtures.Select(f => f.id).ToList();
+
+                var cricketStats = db.deliveries
+                    .Where(d => fixtureIds.Contains(d.fixture_id ?? 0) &&
+                                (playerIds.Contains(d.striker_id ?? 0) || playerIds.Contains(d.bowler_id ?? 0)))
+                    .GroupBy(d => d.fixture_id)
+                    .Select(g => new
+                    {
+                        Fixtureid = g.Key,
+                        totalRuns = g.Sum(d => (d.striker_id.HasValue && playerIds.Contains(d.striker_id.Value)) ? (d.runs_scored ?? 0) : 0),
+                        totalWickets = g.Count(d => d.bowler_id.HasValue && playerIds.Contains(d.bowler_id.Value) &&
+                                                    d.wicket_type != null &&
+                                                    (d.wicket_type == "Bowled" || d.wicket_type == "Stumped" ||
+                                                     d.wicket_type == "Hit Wicket" || d.wicket_type == "Caught"))
+                    })
+                    .ToList();
+                var FootballStats = db.Match_events
+                    .Where(m => fixtureIds.Contains(m.fixture_id ?? 0) &&
+                               (playerIds.Contains(m.player_id ?? 0)))
+                    .GroupBy(m => m.fixture_id)
+                    .Select(g => new
+                    {
+                        Fixtureid = g.Key,
+                        totalgoals = g.Count(m => m.player_id.HasValue && playerIds.Contains(m.player_id.Value) && m.event_type == "Goal")
+                    })
+                    .ToList();
+
+                var results = userFixtures
+                    .Select(fixture => new
+                    {
+                        Fixtureid = fixture.id,
+                        Team1Name = fixture.Team1Name,
+                        Team2Name = fixture.Team2Name,
+                        SportName = fixture.SportName,
+                        totalRuns = fixture.SportName == "Cricket"
+                          ? (cricketStats.FirstOrDefault(cs => cs.Fixtureid == fixture.id)?.totalRuns ?? 0)
+                                   : 0,
+                        totalWickets = fixture.SportName == "Cricket"
+                               ? (cricketStats.FirstOrDefault(cs => cs.Fixtureid == fixture.id)?.totalWickets ?? 0)
+                                      : 0,
+                        totalGoals = fixture.SportName == "Football"
+                                ? (FootballStats.FirstOrDefault(cs => cs.Fixtureid == fixture.id)?.totalgoals ?? 0)
+                                             : 0
+
+                    });
+
+                return Request.CreateResponse(HttpStatusCode.OK, results);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
+
     }
 }

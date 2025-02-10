@@ -399,6 +399,91 @@ namespace SportsManagementSystemBE.Controllers
             }
         }
 
+
+        //PointBasedScoring
+        [HttpPost]
+        public HttpResponseMessage AddOrUpdatePointBasedScore(PointsBaseScore points)
+        {
+            try
+            {
+                //var team = db.Teams.FirstOrDefault(t => t.name == teamName);
+                //var fixture = db.Fixtures.FirstOrDefault(f => f.id == fixture_id);
+
+                //if (points==null)
+                //{
+                //    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "No data found");
+                //}
+
+                var existingScore = db.PointsBaseScores.FirstOrDefault(ps => ps.fixture_id == points.fixture_id && ps.team_id == points.team_id);
+
+                if (existingScore != null)
+                {
+                    // Update existing record
+                    existingScore.setsWon = points.setsWon;
+
+                    db.SaveChanges();
+                    return Request.CreateResponse(HttpStatusCode.OK);//, "Score updated successfully"
+                }
+                else
+                {
+                    // Insert new record
+                    var newPointBaseScore = new PointsBaseScore
+                    {
+                        team_id = points.team_id,
+                        setsWon = points.setsWon,
+                        fixture_id = points.fixture_id,
+                    };
+
+                    db.PointsBaseScores.Add(newPointBaseScore);
+                    db.SaveChanges();
+
+                    return Request.CreateResponse(HttpStatusCode.OK);//, "Score added with ID " + newPointBaseScore.id
+                }
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpPut]
+        public HttpResponseMessage UpdatePointBasedWinner(int fixtureId)
+        {
+            try
+            {
+                var fixture = db.Fixtures.FirstOrDefault(f => f.id == fixtureId);
+
+                var team1Sets = db.PointsBaseScores.FirstOrDefault(s => s.fixture_id == fixtureId && s.team_id == fixture.team1_id);
+                var team2Sets = db.PointsBaseScores.FirstOrDefault(s => s.fixture_id == fixtureId && s.team_id == fixture.team2_id);
+
+                if (team1Sets == null || team2Sets == null)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Scores for one or both teams not found.");
+                }
+
+                if (team1Sets.setsWon > team2Sets.setsWon)
+                {
+                    fixture.winner_id = fixture.team1_id;
+                }
+                else if (team1Sets.setsWon < team2Sets.setsWon)
+                {
+                    fixture.winner_id = fixture.team2_id;
+                }
+                else if (team1Sets.setsWon == team2Sets.setsWon)
+                {
+                    return Request.CreateResponse(HttpStatusCode.Conflict);
+                }
+
+                db.SaveChanges();
+
+                return Request.CreateResponse(HttpStatusCode.OK, "Winner ID updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unexpected error occurred: " + ex.Message);
+            }
+        }
+
     }
 }
 
