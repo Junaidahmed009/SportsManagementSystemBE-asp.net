@@ -106,6 +106,15 @@
           <Property Name="secondary_player_id" Type="int" />
           <Property Name="fielder_id" Type="int" />
         </EntityType>
+        <EntityType Name="Notification">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="user_id" Type="int" />
+          <Property Name="fixture_id" Type="int" />
+          <Property Name="isRead" Type="tinyint" />
+        </EntityType>
         <EntityType Name="Players">
           <Key>
             <PropertyRef Name="id" />
@@ -478,6 +487,30 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_Notification_Fixtures">
+          <End Role="Fixtures" Type="Self.Fixtures" Multiplicity="0..1" />
+          <End Role="Notification" Type="Self.Notification" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Fixtures">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Notification">
+              <PropertyRef Name="fixture_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Notification_Users">
+          <End Role="Users" Type="Self.Users" Multiplicity="0..1" />
+          <End Role="Notification" Type="Self.Notification" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Notification">
+              <PropertyRef Name="user_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_Players_Students">
           <End Role="Students" Type="Self.Students" Multiplicity="1" />
           <End Role="Players" Type="Self.Players" Multiplicity="*" />
@@ -668,6 +701,7 @@
           <EntitySet Name="GoalBaseScore" EntityType="Self.GoalBaseScore" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="ManOfTheMatch" EntityType="Self.ManOfTheMatch" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Match_events" EntityType="Self.Match_events" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Notification" EntityType="Self.Notification" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Players" EntityType="Self.Players" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="PointsBaseScore" EntityType="Self.PointsBaseScore" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Rules" EntityType="Self.Rules" Schema="dbo" store:Type="Tables" />
@@ -766,6 +800,14 @@
           <AssociationSet Name="FK_ManOfTheMatch_Players" Association="Self.FK_ManOfTheMatch_Players">
             <End Role="Players" EntitySet="Players" />
             <End Role="ManOfTheMatch" EntitySet="ManOfTheMatch" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Notification_Fixtures" Association="Self.FK_Notification_Fixtures">
+            <End Role="Fixtures" EntitySet="Fixtures" />
+            <End Role="Notification" EntitySet="Notification" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Notification_Users" Association="Self.FK_Notification_Users">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Notification" EntitySet="Notification" />
           </AssociationSet>
           <AssociationSet Name="FK_Players_Students" Association="Self.FK_Players_Students">
             <End Role="Students" EntitySet="Students" />
@@ -910,6 +952,7 @@
           <NavigationProperty Name="FixturesImages" Relationship="Self.FK_FixturesImages_Fixtures" FromRole="Fixtures" ToRole="FixturesImages" />
           <NavigationProperty Name="GoalBaseScores" Relationship="Self.FK_GoalBaseScore_Fixtures" FromRole="Fixtures" ToRole="GoalBaseScore" />
           <NavigationProperty Name="ManOfTheMatches" Relationship="Self.FK_ManOfTheMatch_Fixtures" FromRole="Fixtures" ToRole="ManOfTheMatch" />
+          <NavigationProperty Name="Notifications" Relationship="Self.FK_Notification_Fixtures" FromRole="Fixtures" ToRole="Notification" />
           <NavigationProperty Name="PointsBaseScores" Relationship="Self.FK_PointsBaseScore_Fixtures" FromRole="Fixtures" ToRole="PointsBaseScore" />
           <NavigationProperty Name="ScoreCards" Relationship="Self.FK_ScoreCard_Fixtures" FromRole="Fixtures" ToRole="ScoreCard" />
           <NavigationProperty Name="TurnBaseGames" Relationship="Self.FK_TurnBaseGames_Fixtures" FromRole="Fixtures" ToRole="TurnBaseGames" />
@@ -962,6 +1005,17 @@
           <Property Name="secondary_player_id" Type="Int32" />
           <Property Name="fielder_id" Type="Int32" />
           <NavigationProperty Name="FixturesImages" Relationship="Self.FK_FixturesImages_Match_events" FromRole="Match_events" ToRole="FixturesImages" />
+        </EntityType>
+        <EntityType Name="Notification">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="user_id" Type="Int32" />
+          <Property Name="fixture_id" Type="Int32" />
+          <Property Name="isRead" Type="Byte" />
+          <NavigationProperty Name="Fixture" Relationship="Self.FK_Notification_Fixtures" FromRole="Notification" ToRole="Fixtures" />
+          <NavigationProperty Name="User" Relationship="Self.FK_Notification_Users" FromRole="Notification" ToRole="Users" />
         </EntityType>
         <EntityType Name="Player">
           <Key>
@@ -1113,6 +1167,7 @@
           <Property Name="registration_no" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="password" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="role" Type="String" MaxLength="25" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="Notifications" Relationship="Self.FK_Notification_Users" FromRole="Users" ToRole="Notification" />
           <NavigationProperty Name="SessionSports" Relationship="Self.FK_SessionSports_Users" FromRole="Users" ToRole="SessionSports" />
           <NavigationProperty Name="Teams" Relationship="Self.FK_Teams_Users" FromRole="Users" ToRole="Teams" />
         </EntityType>
@@ -1308,6 +1363,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_Notification_Fixtures">
+          <End Role="Fixtures" Type="Self.Fixture" Multiplicity="0..1" />
+          <End Role="Notification" Type="Self.Notification" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Fixtures">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Notification">
+              <PropertyRef Name="fixture_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_PointsBaseScore_Fixtures">
           <End Role="Fixtures" Type="Self.Fixture" Multiplicity="1" />
           <End Role="PointsBaseScore" Type="Self.PointsBaseScore" Multiplicity="*" />
@@ -1377,6 +1444,18 @@
             </Principal>
             <Dependent Role="ManOfTheMatch">
               <PropertyRef Name="player_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Notification_Users">
+          <End Role="Users" Type="Self.User" Multiplicity="0..1" />
+          <End Role="Notification" Type="Self.Notification" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Notification">
+              <PropertyRef Name="user_id" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -1570,6 +1649,7 @@
           <EntitySet Name="GoalBaseScores" EntityType="Self.GoalBaseScore" />
           <EntitySet Name="ManOfTheMatches" EntityType="Self.ManOfTheMatch" />
           <EntitySet Name="Match_events" EntityType="Self.Match_events" />
+          <EntitySet Name="Notifications" EntityType="Self.Notification" />
           <EntitySet Name="Players" EntityType="Self.Player" />
           <EntitySet Name="PointsBaseScores" EntityType="Self.PointsBaseScore" />
           <EntitySet Name="Rules" EntityType="Self.Rule" />
@@ -1645,6 +1725,10 @@
             <End Role="Fixtures" EntitySet="Fixtures" />
             <End Role="ManOfTheMatch" EntitySet="ManOfTheMatches" />
           </AssociationSet>
+          <AssociationSet Name="FK_Notification_Fixtures" Association="Self.FK_Notification_Fixtures">
+            <End Role="Fixtures" EntitySet="Fixtures" />
+            <End Role="Notification" EntitySet="Notifications" />
+          </AssociationSet>
           <AssociationSet Name="FK_PointsBaseScore_Fixtures" Association="Self.FK_PointsBaseScore_Fixtures">
             <End Role="Fixtures" EntitySet="Fixtures" />
             <End Role="PointsBaseScore" EntitySet="PointsBaseScores" />
@@ -1668,6 +1752,10 @@
           <AssociationSet Name="FK_ManOfTheMatch_Players" Association="Self.FK_ManOfTheMatch_Players">
             <End Role="Players" EntitySet="Players" />
             <End Role="ManOfTheMatch" EntitySet="ManOfTheMatches" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Notification_Users" Association="Self.FK_Notification_Users">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Notification" EntitySet="Notifications" />
           </AssociationSet>
           <AssociationSet Name="FK_Players_Students" Association="Self.FK_Players_Students">
             <End Role="Students" EntitySet="Students" />
@@ -1843,6 +1931,16 @@
                 <ScalarProperty Name="player_id" ColumnName="player_id" />
                 <ScalarProperty Name="secondary_player_id" ColumnName="secondary_player_id" />
                 <ScalarProperty Name="fielder_id" ColumnName="fielder_id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Notifications">
+            <EntityTypeMapping TypeName="SportsManagementSystemModel.Notification">
+              <MappingFragment StoreEntitySet="Notification">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="user_id" ColumnName="user_id" />
+                <ScalarProperty Name="fixture_id" ColumnName="fixture_id" />
+                <ScalarProperty Name="isRead" ColumnName="isRead" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

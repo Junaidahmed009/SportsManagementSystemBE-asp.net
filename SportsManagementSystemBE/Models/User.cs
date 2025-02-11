@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System;
+    using System; using Newtonsoft.Json;
     using System.Collections.Generic;
     
     public partial class User
@@ -17,6 +17,7 @@ namespace SportsManagementSystemBE.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public User()
         {
+            this.Notifications = new HashSet<Notification>();
             this.SessionSports = new HashSet<SessionSport>();
             this.Teams = new HashSet<Team>();
         }
@@ -28,8 +29,10 @@ namespace SportsManagementSystemBE.Models
         public string role { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<SessionSport> SessionSports { get; set; }
+        [JsonIgnore] public virtual ICollection<Notification> Notifications { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Team> Teams { get; set; }
+        [JsonIgnore] public virtual ICollection<SessionSport> SessionSports { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        [JsonIgnore] public virtual ICollection<Team> Teams { get; set; }
     }
 }

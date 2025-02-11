@@ -12,12 +12,14 @@ namespace SportsManagementSystemBE.Models
     using System; using Newtonsoft.Json;
     using System.Collections.Generic;
     
-    public partial class Delivery_Images
+    public partial class Notification
     {
         public int id { get; set; }
-        public string image_path { get; set; }
-        public int deliveries_id { get; set; }
+        public Nullable<int> user_id { get; set; }
+        public Nullable<int> fixture_id { get; set; }
+        public Nullable<byte> isRead { get; set; }
     
-        [JsonIgnore] public virtual delivery delivery { get; set; }
+        [JsonIgnore] public virtual Fixture Fixture { get; set; }
+        [JsonIgnore] public virtual User User { get; set; }
     }
 }

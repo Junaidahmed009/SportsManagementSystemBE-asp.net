@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System;
+    using System; using Newtonsoft.Json;
     using System.Collections.Generic;
     
     public partial class ScoreCard
@@ -21,8 +21,8 @@ namespace SportsManagementSystemBE.Models
         public Nullable<int> score { get; set; }
         public Nullable<int> ball_consumed { get; set; }
     
-        public virtual Fixture Fixture { get; set; }
-        public virtual Player Player { get; set; }
-        public virtual Team Team { get; set; }
+        [JsonIgnore] public virtual Fixture Fixture { get; set; }
+        [JsonIgnore] public virtual Player Player { get; set; }
+        [JsonIgnore] public virtual Team Team { get; set; }
     }
 }

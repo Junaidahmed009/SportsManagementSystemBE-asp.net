@@ -6,10 +6,9 @@
 //     Manual changes to this file will be overwritten if the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-
 namespace SportsManagementSystemBE.Models
 {
-    using System;
+    using System; using Newtonsoft.Json;
     using System.Collections.Generic;
     
     public partial class Comment

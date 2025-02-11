@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System;
+    using System; using Newtonsoft.Json;
     using System.Collections.Generic;
     
     public partial class ManOfTheMatch
@@ -19,7 +19,7 @@ namespace SportsManagementSystemBE.Models
         public int player_id { get; set; }
         public string image_path { get; set; }
     
-        public virtual Fixture Fixture { get; set; }
-        public virtual Player Player { get; set; }
+        [JsonIgnore] public virtual Fixture Fixture { get; set; }
+        [JsonIgnore] public virtual Player Player { get; set; }
     }
 }

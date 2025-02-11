@@ -9,7 +9,7 @@
 
 namespace SportsManagementSystemBE.Models
 {
-    using System;
+    using System; using Newtonsoft.Json;
     using System.Collections.Generic;
     
     public partial class delivery
@@ -35,14 +35,14 @@ namespace SportsManagementSystemBE.Models
         public Nullable<int> dismissed_player_id { get; set; }
         public Nullable<int> fielder_id { get; set; }
     
-        public virtual Player Player { get; set; }
-        public virtual Player Player1 { get; set; }
-        public virtual Player Player2 { get; set; }
-        public virtual Fixture Fixture { get; set; }
-        public virtual Player Player3 { get; set; }
-        public virtual Player Player4 { get; set; }
-        public virtual Team Team { get; set; }
+        [JsonIgnore] public virtual Player Player { get; set; }
+        [JsonIgnore] public virtual Player Player1 { get; set; }
+        [JsonIgnore] public virtual Player Player2 { get; set; }
+        [JsonIgnore] public virtual Fixture Fixture { get; set; }
+        [JsonIgnore] public virtual Player Player3 { get; set; }
+        [JsonIgnore] public virtual Player Player4 { get; set; }
+        [JsonIgnore] public virtual Team Team { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Delivery_Images> Delivery_Images { get; set; }
+        [JsonIgnore] public virtual ICollection<Delivery_Images> Delivery_Images { get; set; }
     }
 }

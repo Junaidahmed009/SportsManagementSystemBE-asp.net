@@ -484,6 +484,40 @@ namespace SportsManagementSystemBE.Controllers
             }
         }
 
+        [HttpPut]
+        public HttpResponseMessage AddTurnBaseWinner(TurnBaseGame game)
+        {
+            try
+            {
+                //if (game == null)
+                //    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid game data.");
+
+                var fixture = db.Fixtures.FirstOrDefault(f => f.id == game.fixture_id);
+                if (fixture == null)
+                   return Request.CreateResponse(HttpStatusCode.Conflict);
+
+                // Add new TurnBaseGame record
+                db.TurnBaseGames.Add(new TurnBaseGame
+                {
+                    fixture_id = game.fixture_id,
+                    winnner_id = game.winnner_id,
+                    loser_id = game.loser_id
+                });
+
+                // Update fixture winner_id
+                fixture.winner_id = game.winnner_id;
+
+                db.SaveChanges();
+
+                return Request.CreateResponse(HttpStatusCode.OK);//, "Winner ID updated successfully."
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Error: " + ex.Message);
+            }
+        }
+
+
     }
 }
 
