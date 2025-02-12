@@ -395,7 +395,7 @@ namespace SportsManagementSystemBE.Controllers
             new { RoundName = "Quarter Final", ExpectedCount = 4, NextRound = "Semi Final", NextRoundMatches = 2 },
             new { RoundName = "League Match 2", ExpectedCount = 8, NextRound = "Quarter Final", NextRoundMatches = 4 },
             new { RoundName = "League Match", ExpectedCount = 16, NextRound = "League Match 2", NextRoundMatches = 8 }
-        };
+                        };
 
                 List<int?> winnerTeams = null;
 
@@ -458,8 +458,114 @@ namespace SportsManagementSystemBE.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
+        //[HttpGet]
+        //public HttpResponseMessage CreateautoFixtures(int userid)
+        //{
+        //    try
+        //    {
+        //        if (userid < 0)
+        //        {
+        //            return Request.CreateResponse(HttpStatusCode.Conflict);
+        //        }
 
+        //        var latestSession = db.Sessions.OrderByDescending(s => s.startDate).FirstOrDefault();
+        //        if (latestSession == null)
+        //        {
+        //            return Request.CreateResponse(HttpStatusCode.NotFound, "No session found.");
+        //        }
 
+        //        var sessionSport = db.SessionSports.FirstOrDefault(s => s.session_id == latestSession.id && s.managed_by == userid);
+        //        if (sessionSport == null)
+        //        {
+        //            return Request.CreateResponse(HttpStatusCode.NotFound, "No session sport found for the given user.");
+        //        }
+
+        //        var teamIds = db.Teams.Where(t => t.session_id == latestSession.id && t.sports_id == sessionSport.sports_id)
+        //            .Select(t => t.id)
+        //            .ToList();
+
+        //        if (sessionSport.sports_id == 1 && teamIds.Count != 32)
+        //        {
+        //            return Request.CreateResponse(HttpStatusCode.NotFound, "Teams Not Completed");
+        //        }
+
+        //        var rounds = new[]
+        //        {
+        //    new { RoundName = "Final", ExpectedCount = 1, NextRound = "", NextRoundMatches = 0 },
+        //    new { RoundName = "Semi Final", ExpectedCount = 2, NextRound = "Final", NextRoundMatches = 1 },
+        //    new { RoundName = "Quarter Final", ExpectedCount = 4, NextRound = "Semi Final", NextRoundMatches = 2 },
+        //    new { RoundName = "League Match 2", ExpectedCount = 8, NextRound = "Quarter Final", NextRoundMatches = 4 },
+        //    new { RoundName = "League Match", ExpectedCount = 16, NextRound = "League Match 2", NextRoundMatches = 8 }
+        //};
+
+        //        List<int?> winnerTeams = null;
+
+        //        foreach (var round in rounds)
+        //        {
+        //            var fixtures = db.Fixtures
+        //                .Where(f => f.sessionSports_id == sessionSport.id && f.match_type == round.RoundName)
+        //                .ToList();
+
+        //            if (fixtures.Count == round.ExpectedCount && fixtures.All(f => f.winner_id != null))
+        //            {
+        //                winnerTeams = fixtures.Select(f => f.winner_id).ToList();
+
+        //                if (!string.IsNullOrEmpty(round.NextRound))
+        //                {
+        //                    var nextRoundFixtures = db.Fixtures
+        //                        .Where(f => f.sessionSports_id == sessionSport.id && f.match_type == round.NextRound)
+        //                        .OrderBy(f => f.id)
+        //                        .ToList();
+
+        //                    if (winnerTeams.Count >= round.NextRoundMatches * 2)
+        //                    {
+        //                        if (nextRoundFixtures.Count == round.NextRoundMatches)
+        //                        {
+        //                            for (int i = 0; i < round.NextRoundMatches; i++)
+        //                            {
+        //                                nextRoundFixtures[i].team1_id = winnerTeams[i * 2];
+        //                                nextRoundFixtures[i].team2_id = winnerTeams[i * 2 + 1];
+        //                            }
+
+        //                            db.SaveChanges();
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
+
+        //        // Special handling for League Matches if sports_id == 1
+        //        if (sessionSport.sports_id == 1)
+        //        {
+        //            var existingLeagueFixtures = db.Fixtures
+        //                .Where(f => f.sessionSports_id == sessionSport.id && f.match_type == "League Match")
+        //                .ToList();
+
+        //            if (!existingLeagueFixtures.Any())
+        //            {
+        //                List<Fixture> newFixtures = new List<Fixture>();
+        //                for (int i = 0; i < teamIds.Count; i += 2)
+        //                {
+        //                    newFixtures.Add(new Fixture
+        //                    {
+        //                        sessionSports_id = sessionSport.id,
+        //                        match_type = "League Match",
+        //                        team1_id = teamIds[i],
+        //                        team2_id = teamIds[i + 1]
+        //                    });
+        //                }
+        //                db.Fixtures.AddRange(newFixtures);
+        //                db.SaveChanges();
+        //            }
+        //        }
+
+        //        return Request.CreateResponse(HttpStatusCode.OK, "Fixtures created successfully.");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+        //    }
+        //}
 
 
     }

@@ -517,6 +517,21 @@ namespace SportsManagementSystemBE.Controllers
             }
         }
 
+        //[HttpGet]
+        //public HttpResponseMessage GetTurnBaseEvents(int fixtureid)
+        //{
+        //    try
+        //    {
+
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Error: " + ex.Message);
+        //    }
+
+
+        //}
 
     }
 }

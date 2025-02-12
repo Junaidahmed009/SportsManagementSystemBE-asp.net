@@ -540,6 +540,68 @@ namespace SportsManagementSystemBE.Controllers
             }
         }
 
+        //[HttpGet]
+        //public HttpResponseMessage GetImagePath(int fixid)
+        //{
+        //    try
+        //    {
+        //        if (fixid < 0)
+        //        {
+        //            return Request.CreateResponse(HttpStatusCode.NotFound);
+        //        }
+        //        var MOMimagepath = db.ManOfTheMatches.
+        //            Where(m => m.fixture_id == fixid)
+        //            .Select(m => m.image_path)
+        //            .FirstOrDefault();
+
+        //        var Deliveryimages =
+        //           (from d in db.deliveries
+        //            join dm in db.Delivery_Images on d.id equals dm.deliveries_id
+        //            where d.fixture_id == fixid
+        //            group d by new { dm.image_path, dm.deliveries_id, d.runs_scored, d.wicket_type } into grouped
+        //            select new
+        //            {
+        //                imagepath = grouped.Key.image_path,
+        //                deliveriesid = grouped.Key.deliveries_id,
+        //                socre = grouped.Key.runs_scored.ToString(),
+        //                wicket = grouped.Key.wicket_type
+        //            }).ToList();
+
+        //        var playerDetails =
+        //            (from p in db.Players
+        //             join mm in db.ManOfTheMatches on p.id equals mm.player_id
+        //             join s in db.Students on p.reg_no equals s.reg_no
+        //             join d in db.deliveries on mm.fixture_id equals d.fixture_id 
+        //             where mm.fixture_id == fixid
+        //             group new {p, d} by new { p.reg_no, studentregno = s.reg_no, s.name, s.section, s.semNo, s.discipline} into grouped
+        //             select new
+        //             {
+        //                 studentreg = grouped.Key.studentregno,
+        //                 name = grouped.Key.name,
+        //                 section = grouped.Key.section,
+        //                 semno = grouped.Key.semNo,
+        //                 discipline = grouped.Key.discipline,
+        //                 runsscored = grouped.Where(g=>g.d.striker_id==g.p.id).Sum(g => g.d.runs_scored),
+        //                 wickets_taken = grouped.Count(g =>g.d.bowler_id==g.p.id &&
+        //                  ( g.d.wicket_type == "Bowled" ||
+        //                   g.d.wicket_type == "Caught" ||
+        //                   g.d.wicket_type == "Stumped" ||
+        //                   g.d.wicket_type == "Hit Wicket"))
+        //             }).ToList();
+        //        if (playerDetails == null || Deliveryimages == null || MOMimagepath ==null)
+        //        {
+        //            return Request.CreateResponse(HttpStatusCode.NotFound);
+        //        }
+        //        var data = new { MOMimagepath,playerDetails,Deliveryimages };
+
+        //        return Request.CreateResponse(HttpStatusCode.OK,data);
+        //    }
+        //    catch (Exception ex) {
+        //        return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+        //    }
+        //}
+
+
         [HttpGet]
         public HttpResponseMessage GetImagePath(int fixid)
         {
@@ -554,26 +616,138 @@ namespace SportsManagementSystemBE.Controllers
                     .Select(m => m.image_path)
                     .FirstOrDefault();
 
-                var Deliveryimages =
-                   (from d in db.deliveries
+                //var Deliveryimages =
+                //   (from d in db.deliveries
+                //    join dm in db.Delivery_Images on d.id equals dm.deliveries_id
+                //    where d.fixture_id == fixid
+                //    group d by new { dm.image_path, dm.deliveries_id, d.runs_scored, d.wicket_type } into grouped
+                //    select new
+                //    {
+                //        imagepath = grouped.Key.image_path,
+                //        deliveriesid = grouped.Key.deliveries_id,
+                //        socre = grouped.Key.runs_scored.ToString(),
+                //        wicket = grouped.Key.wicket_type
+                //    }).ToList();
+                // 1. First get all deliveries with their images for the given fixture
+                var deliveryWithImages =
+                    from d in db.deliveries
                     join dm in db.Delivery_Images on d.id equals dm.deliveries_id
                     where d.fixture_id == fixid
-                    group d by new { dm.image_path, dm.deliveries_id, d.runs_scored, d.wicket_type } into grouped
+                    select new { Delivery = d, Image = dm };
+
+                // 2. Define base query for player-student joins
+                var baseQuery =
+                    from di in deliveryWithImages
+                    select di;
+
+                // 3. Handle STRIKER details (batsman facing the ball)
+                var withStrikerDetails =
+                    from di in baseQuery
+                    join strikerPlayer in db.Players on di.Delivery.striker_id equals strikerPlayer.id into strikerJoin
+                    from striker in strikerJoin.DefaultIfEmpty() // Left join
+                    join strikerStudent in db.Students on striker.reg_no equals strikerStudent.reg_no into strikerStudentJoin
+                    from strikerStudent in strikerStudentJoin.DefaultIfEmpty()
                     select new
                     {
-                        imagepath = grouped.Key.image_path,
-                        deliveriesid = grouped.Key.deliveries_id,
-                        socre = grouped.Key.runs_scored.ToString(),
-                        wicket = grouped.Key.wicket_type
-                    }).ToList();
+                        Base = di,
+                        StrikerPlayer = striker,
+                        StrikerStudent = strikerStudent
+                    };
+
+                // 4. Add NON-STRIKER details (batsman at opposite end)
+                var withNonStrikerDetails =
+                    from temp in withStrikerDetails
+                    join nonStrikerPlayer in db.Players on temp.Base.Delivery.non_striker_id equals nonStrikerPlayer.id into nonStrikerJoin
+                    from nonStriker in nonStrikerJoin.DefaultIfEmpty()
+                    join nonStrikerStudent in db.Students on nonStriker.reg_no equals nonStrikerStudent.reg_no into nonStrikerStudentJoin
+                    from nonStrikerStudent in nonStrikerStudentJoin.DefaultIfEmpty()
+                    select new
+                    {
+                        temp.Base,
+                        temp.StrikerPlayer,
+                        temp.StrikerStudent,
+                        NonStrikerPlayer = nonStriker,
+                        NonStrikerStudent = nonStrikerStudent
+                    };
+
+                // 5. Add BOWLER details (player bowling the delivery)
+                var withBowlerDetails =
+                    from temp in withNonStrikerDetails
+                    join bowlerPlayer in db.Players on temp.Base.Delivery.bowler_id equals bowlerPlayer.id into bowlerJoin
+                    from bowler in bowlerJoin.DefaultIfEmpty()
+                    join bowlerStudent in db.Students on bowler.reg_no equals bowlerStudent.reg_no into bowlerStudentJoin
+                    from bowlerStudent in bowlerStudentJoin.DefaultIfEmpty()
+                    select new
+                    {
+                        temp.Base,
+                        temp.StrikerPlayer,
+                        temp.StrikerStudent,
+                        temp.NonStrikerPlayer,
+                        temp.NonStrikerStudent,
+                        BowlerPlayer = bowler,
+                        BowlerStudent = bowlerStudent
+                    };
+
+                // 6. Add DISMISSED PLAYER details (if wicket falls)
+                var withDismissedDetails =
+                    from temp in withBowlerDetails
+                    join dismissedPlayer in db.Players on temp.Base.Delivery.dismissed_player_id equals dismissedPlayer.id into dismissedJoin
+                    from dismissed in dismissedJoin.DefaultIfEmpty()
+                    join dismissedStudent in db.Students on dismissed.reg_no equals dismissedStudent.reg_no into dismissedStudentJoin
+                    from dismissedStudent in dismissedStudentJoin.DefaultIfEmpty()
+                    select new
+                    {
+                        temp.Base,
+                        temp.StrikerPlayer,
+                        temp.StrikerStudent,
+                        temp.NonStrikerPlayer,
+                        temp.NonStrikerStudent,
+                        temp.BowlerPlayer,
+                        temp.BowlerStudent,
+                        DismissedPlayer = dismissed,
+                        DismissedStudent = dismissedStudent
+                    };
+
+                // 7. Add FIELDER details (catcher/thrower for dismissal)
+                var finalQuery =
+                    from temp in withDismissedDetails
+                    join fielderPlayer in db.Players on temp.Base.Delivery.fielder_id equals fielderPlayer.id into fielderJoin
+                    from fielder in fielderJoin.DefaultIfEmpty()
+                    join fielderStudent in db.Students on fielder.reg_no equals fielderStudent.reg_no into fielderStudentJoin
+                    from fielderStudent in fielderStudentJoin.DefaultIfEmpty()
+                    select new
+                    {
+                        // Delivery and Image Info
+                        imagepath = temp.Base.Image.image_path,
+                        deliveriesid = temp.Base.Delivery.id,
+                        score = temp.Base.Delivery.runs_scored.ToString(),
+                        wicket = temp.Base.Delivery.wicket_type,
+                        OverNumber = temp.Base.Delivery.over_number,
+                        BallNumber = temp.Base.Delivery.ball_number,
+
+                        // Player Details
+                        StrikerId = temp.Base.Delivery.striker_id,
+                        StrikerName = temp.StrikerStudent != null ? temp.StrikerStudent.name : "Unknown",
+                        NonStrikerId = temp.Base.Delivery.non_striker_id,
+                        NonStrikerName = temp.NonStrikerStudent != null ? temp.NonStrikerStudent.name : "Unknown",
+                        BowlerId = temp.Base.Delivery.bowler_id,
+                        BowlerName = temp.BowlerStudent != null ? temp.BowlerStudent.name : "Unknown",
+                        DismissedPlayerId = temp.Base.Delivery.dismissed_player_id,
+                        DismissedPlayerName = temp.DismissedStudent != null ? temp.DismissedStudent.name : "Unknown",
+                        FielderId = temp.Base.Delivery.fielder_id,
+                        FielderName = fielderStudent != null ? fielderStudent.name : "Unknown"
+                    };
+
+                // Execute the final query
+                var Deliveryimages = finalQuery.ToList();
 
                 var playerDetails =
                     (from p in db.Players
                      join mm in db.ManOfTheMatches on p.id equals mm.player_id
                      join s in db.Students on p.reg_no equals s.reg_no
-                     join d in db.deliveries on mm.fixture_id equals d.fixture_id 
+                     join d in db.deliveries on mm.fixture_id equals d.fixture_id
                      where mm.fixture_id == fixid
-                     group new {p, d} by new { p.reg_no, studentregno = s.reg_no, s.name, s.section, s.semNo, s.discipline} into grouped
+                     group new { p, d } by new { p.reg_no, studentregno = s.reg_no, s.name, s.section, s.semNo, s.discipline } into grouped
                      select new
                      {
                          studentreg = grouped.Key.studentregno,
@@ -581,22 +755,23 @@ namespace SportsManagementSystemBE.Controllers
                          section = grouped.Key.section,
                          semno = grouped.Key.semNo,
                          discipline = grouped.Key.discipline,
-                         runsscored = grouped.Where(g=>g.d.striker_id==g.p.id).Sum(g => g.d.runs_scored),
-                         wickets_taken = grouped.Count(g =>g.d.bowler_id==g.p.id &&
-                          ( g.d.wicket_type == "Bowled" ||
+                         runsscored = grouped.Where(g => g.d.striker_id == g.p.id).Sum(g => g.d.runs_scored),
+                         wickets_taken = grouped.Count(g => g.d.bowler_id == g.p.id &&
+                          (g.d.wicket_type == "Bowled" ||
                            g.d.wicket_type == "Caught" ||
                            g.d.wicket_type == "Stumped" ||
                            g.d.wicket_type == "Hit Wicket"))
                      }).ToList();
-                if (playerDetails == null || Deliveryimages == null || MOMimagepath ==null)
+                if (playerDetails == null || Deliveryimages == null || MOMimagepath == null)
                 {
                     return Request.CreateResponse(HttpStatusCode.NotFound);
                 }
-                var data = new { MOMimagepath,playerDetails,Deliveryimages };
+                var data = new { MOMimagepath, playerDetails, Deliveryimages };
 
-                return Request.CreateResponse(HttpStatusCode.OK,data);
+                return Request.CreateResponse(HttpStatusCode.OK, data);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
